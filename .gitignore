@@ -1,0 +1,14 @@
+venv/
+.ipynb_checkpoints/
+.idea/
+env/
+.env
+vectorDB/
+data/
+download/**
+.cache_bkup
+model.json
+
+
+# fast api
+__pycache__
