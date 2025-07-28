@@ -1,9 +1,0 @@
-{% extends "dreamlens_core/base.html" %}
-{% block content %}
-  <h2>꿈 해몽 분석기</h2>
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">해몽 분석</button>
-  </form>
-{% endblock %}

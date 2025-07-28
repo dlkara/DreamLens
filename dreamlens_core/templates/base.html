@@ -1,0 +1,38 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}DreamLens{% endblock %}</title>
+
+  <!-- 공통 CSS (예: static/css/style.css) -->
+  <link
+    rel="stylesheet"
+    href="{% static 'css/style.css' %}"
+  />
+</head>
+<body>
+  <!-- 네비게이션 바 -->
+  <header>
+    <nav>
+      <a href="{% url 'interpret_dream' %}">꿈 해몽</a>
+      <!-- 나중에 추가 기능 링크들 -->
+    </nav>
+  </header>
+
+  <!-- 페이지별 콘텐츠 -->
+  <main>
+    {% block content %}
+    {% endblock %}
+  </main>
+
+  <!-- 공통 푸터 -->
+  <footer>
+    <p>&copy; 2025 DreamLens</p>
+  </footer>
+
+  <!-- 공통 JS (필요시) -->
+  <script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>
