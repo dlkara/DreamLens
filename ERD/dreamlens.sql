@@ -12,7 +12,7 @@ CREATE TABLE DreamDict
 (
     id       INT     NOT NULL AUTO_INCREMENT,
     category VARCHAR NOT NULL COMMENT '대분류',
-    keyword  VARCHAR NOT NULL COMMENT '소분류 키워드',
+    sub_category VARCHAR NOT NULL COMMENT '소분류 키워드',
     meaning  TEXT    NOT NULL COMMENT '상징적 의미',
     PRIMARY KEY (id)
 ) COMMENT '꿈 사전';
@@ -41,21 +41,14 @@ ALTER TABLE Emotion
 CREATE TABLE Interpretation
 (
     id         INT  NOT NULL AUTO_INCREMENT,
+    user_id    INT  NOT NULL,
     input_text TEXT NOT NULL COMMENT '꿈 내용',
     result     TEXT NOT NULL COMMENT '해몽 결과',
+    keywords   VARCHAR(50) NULL COMMENT '키워드',
     summary    TEXT NULL,
     created_at DATETIME NULL,
-    user_id    INT  NOT NULL,
     PRIMARY KEY (id)
 ) COMMENT '해몽 결과 로그';
-
-CREATE TABLE InterpretationKeyword
-(
-    id                INT NOT NULL AUTO_INCREMENT,
-    interpretation_id INT NOT NULL,
-    dict_id           INT NOT NULL,
-    PRIMARY KEY (id)
-) COMMENT '해몽결과에 포함된 키워드';
 
 CREATE TABLE User
 (
@@ -78,16 +71,6 @@ ALTER TABLE Interpretation
     ADD CONSTRAINT FK_User_TO_Interpretation
         FOREIGN KEY (user_id)
             REFERENCES User (id);
-
-ALTER TABLE InterpretationKeyword
-    ADD CONSTRAINT FK_Interpretation_TO_InterpretationKeyword
-        FOREIGN KEY (interpretation_id)
-            REFERENCES Interpretation (id);
-
-ALTER TABLE InterpretationKeyword
-    ADD CONSTRAINT FK_DreamDict_TO_InterpretationKeyword
-        FOREIGN KEY (dict_id)
-            REFERENCES DreamDict (id);
 
 ALTER TABLE Diary
     ADD CONSTRAINT FK_Interpretation_TO_Diary
