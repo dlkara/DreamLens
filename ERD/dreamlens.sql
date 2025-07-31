@@ -2,7 +2,6 @@ CREATE TABLE Diary
 (
     id                INT      NOT NULL AUTO_INCREMENT,
     interpretation_id INT      NOT NULL,
-    user_id           INT      NOT NULL,
     emotion_id        INT      NOT NULL,
     dreamtype_id      INT      NOT NULL,
     date              DATETIME NOT NULL,
