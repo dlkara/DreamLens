@@ -10,54 +10,22 @@ from dotenv import load_dotenv
 load_dotenv("../.env")
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-# --- 데이터 로드 ---
-@st.cache_resource
-def load_data():
-    with open("data/dream.json", "r", encoding="utf-8") as f:
-        data = json.load(f)
-
-    all_dreams = []
-    all_subcats = set()
-
-    for main_cat, subcats in data.items():
-        for subcat, entries in subcats.items():
-            all_subcats.add(subcat)
-            for entry in entries:
-                dream_text = entry.get("꿈", "").strip()
-                interp_text = entry.get("해몽", "").strip()
-                if dream_text and interp_text:
-                    all_dreams.append({
-                        "대분류": main_cat,
-                        "소분류": subcat,
-                        "꿈": dream_text,
-                        "해몽": interp_text
-                    })
-    return sorted(list(all_subcats)), all_dreams
-
 # --- GPT 해몽 생성 ---
-def generate_llm_from_subcats(subcats, examples, use_reference):
-    keyword_text = ", ".join(subcats)
-
-    if use_reference and examples:
-        reference_texts = []
-        for i, item in enumerate(examples[:5]):
-            dream = item.get("꿈", "").strip()
-            interp = item.get("해몽", "").strip()
-            reference_texts.append(f"{i+1}. 꿈: {dream}\n   해몽: {interp}")
-        context = "\n\n".join(reference_texts)
-    else:
-        context = "(참고할 기존 해몽 사례 없음)"
+def generate_llm_from_keywords(keywords):
+    keyword_text = ", ".join(keywords)
 
     prompt = f"""
-당신은 한국의 전통 해몽 지식과 현대 심리학을 아우르는, 매우 지혜로운 꿈 상징 분석 전문가입니다.
+당신은 한국의 전통 해몽 전문가이자 현대 심리학 상담가입니다.  
+전통적 상징 해석과 함께, 사용자의 심리 상태와 현실적인 맥락도 고려해 해몽을 분석합니다.
 당신의 임무는 사용자가 제시한 다음 [키워드 조합]이 꿈에서 함께 나타났을 때 가질 수 있는 상징적 의미를
 한국 문화적 맥락에 맞춰 깊이 있게 분석하고 설명하는 것입니다.
+또한 당신의 목표는 사용자가 제시한 키워드들이 조합된 꿈이  
+심리적으로 어떤 의미를 가질 수 있는지 통합적으로 설명하는 것입니다.
+
 
 [키워드 조합]:
 {keyword_text}
 
-[참고 사례]:
-{context}
 
 [분석 지침]:
 1. 각 키워드가 꿈에서 보편적으로 가지는 상징적 의미를 설명해주세요.
@@ -67,11 +35,21 @@ def generate_llm_from_subcats(subcats, examples, use_reference):
 4. 전통적인 상징으로 보기 어려운 키워드가 포함된 경우, 솔직하게 "최근의 관심사나 개인적인 경험이 반영된 것일 수 있다"고 안내해주세요.
 5. 설명은 아래와 같이 구성해주세요:
 
-[해몽시작]  
+[해몽]  
 (해몽 내용)
 
-[요약시작]  
+[요약]  
 (3줄 요약)
+
+
+[예외 지침]:
+- 키워드가 전통적 해몽에서 의미가 약한 경우, “이 키워드는 전통 해석보다는 사용자의 최근 관심사나 경험이 반영된 것일 수 있습니다.”라고 명확히 안내하세요.
+
+
+[톤]:
+- 따뜻하고 신뢰감 있는 말투
+- 너무 단정적이기보다 조심스럽고 공감 가는 어조  
+- 이모티콘/줄임말/구어체는 사용하지 마세요.
 """
 
     response = openai.chat.completions.create(
@@ -85,31 +63,31 @@ def generate_llm_from_subcats(subcats, examples, use_reference):
     return response.choices[0].message.content
 
 # --- Streamlit UI ---
-st.set_page_config("🌙 소분류 조합 꿈 해몽기", page_icon="🧩")
-st.title("🧩 소분류 조합 기반 꿈 해몽")
-st.markdown("소분류 키워드를 1~3개 선택하면, 그 조합을 기반으로 AI가 새로운 꿈 해몽을 생성해요.")
+st.set_page_config("꿈 조합기", page_icon="🧩")
+st.title("🧩 꿈 조합기")
+st.markdown("키워드 1~3개를 입력하면, AI가 조합된 상징을 기반으로 새로운 해몽을 생성해요.")
 
-subcats, dreams = load_data()
+col1, col2, col3 = st.columns(3)
+with col1:
+    kw1 = st.text_input("키워드 1", key="k1", placeholder="예: 불")
+with col2:
+    kw2 = st.text_input("키워드 2", key="k2", placeholder="예: 뱀")
+with col3:
+    kw3 = st.text_input("키워드 3", key="k3", placeholder="예: 어머니")
 
-selected_subcats = st.multiselect("🗂️ 소분류 선택", subcats, max_selections=3)
-use_reference = st.checkbox("📚 기존 해몽 사례(dream.json) 참고", value=True)
+keywords = [kw.strip() for kw in [kw1, kw2, kw3] if kw.strip()]
 
-if st.button("🔮 해몽 생성하기"):
-    if not (1 <= len(selected_subcats) <= 3):
-        st.warning("1~3개의 소분류를 선택해주세요.")
-    else:
-        matched = [d for d in dreams if d["소분류"] in selected_subcats] if use_reference else []
+if st.button("🔮 꿈 조합하기", disabled=not (1 <= len(keywords) <= 3)):
+    with st.spinner("해몽 중입니다..."):
+        llm_result = generate_llm_from_keywords(keywords)
+        try:
+            _, interp = llm_result.split("[해몽]", 1)
+            interp, summary = interp.split("[요약]", 1)
+        except:
+            interp, summary = llm_result, ""
 
-        with st.spinner("AI가 해몽을 생성 중입니다..."):
-            llm_result = generate_llm_from_subcats(selected_subcats, matched, use_reference)
-            try:
-                _, interp = llm_result.split("[해몽시작]", 1)
-                interp, summary = interp.split("[요약시작]", 1)
-            except:
-                interp, summary = llm_result, ""
+        st.subheader("🌙 해몽")
+        st.markdown(interp.strip())
 
-            st.subheader("🌙 해몽")
-            st.markdown(interp.strip())
-
-            st.subheader("🧾 요약")
-            st.markdown(summary.strip())
+        st.subheader("🧾 요약")
+        st.markdown(summary.strip())
