@@ -9,7 +9,7 @@ import streamlit as st
 
 
 # --- 환경 변수 로드 ---
-load_dotenv(r'../env/langchain_env.txt')
+load_dotenv(r'../env.txt')
 print(f'\tOPENAI_API_KEY={os.getenv("OPENAI_API_KEY")[:20]}...')
 
 

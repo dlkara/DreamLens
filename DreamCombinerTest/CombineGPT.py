@@ -7,7 +7,7 @@ import streamlit as st
 from dotenv import load_dotenv
 
 # --- 환경 변수 로드 ---
-load_dotenv(".env")
+load_dotenv("../.env")
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # --- 데이터 로드 ---
