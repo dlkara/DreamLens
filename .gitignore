@@ -12,3 +12,7 @@ model.json
 
 # fast api
 __pycache__
+
+# DreamTest 중 데이터 부분
+DreamTest/data
+DreamTest/embeddings
