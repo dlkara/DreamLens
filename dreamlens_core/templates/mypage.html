@@ -1,0 +1,23 @@
+<h2>내 정보 수정</h2>
+<form method="post">
+  {% csrf_token %}
+  <div>
+    {{ form.username.label_tag }} {{ form.username }}
+  </div>
+  <div>
+    {{ form.password.label_tag }} {{ form.password }}
+  </div>
+  <div>
+    {{ form.password_confirm.label_tag }} {{ form.password_confirm }}
+  </div>
+  <div>
+    {{ form.nickname.label_tag }} {{ form.nickname }}
+  </div>
+  <div>
+    {{ form.birthdate.label_tag }} {{ form.birthdate }}
+  </div>
+  <div>
+    {{ form.gender.label_tag }} {{ form.gender }}
+  </div>
+  <button type="submit">저장하기</button>
+</form>
