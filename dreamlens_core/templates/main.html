@@ -1,0 +1,31 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>DreamLens</title>
+    <link rel="stylesheet" href="{% static 'css/common.css' %}">
+</head>
+<body>
+
+    {% include "header.html" %}
+
+    <div class="logo-bar">📘 DreamLens</div>
+
+    <main style="padding: 40px; text-align: center;">
+        <h1>꿈의 조각을 맞춰보세요!</h1>
+
+        <div style="display: flex; justify-content: center; gap: 30px;">
+            <a href="/combine/" class="btn big">🔮 해몽하러 가기</a>
+            <a href="/dict/" class="btn big">📘 꿈 사전 보기</a>
+        </div>
+    </main>
+
+    <footer style="text-align:center; padding:20px; color:#777;">
+        &copy; 2025 DreamLens | All Rights Reserved.
+    </footer>
+
+    <script src="{% static 'js/header.js' %}"></script>
+
+</body>
+</html>

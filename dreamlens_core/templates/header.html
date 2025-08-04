@@ -1,0 +1,24 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/header.css' %}">
+
+<!-- 햄버거 버튼 -->
+<button id="hamburgerBtn" class="hamburger">☰</button>
+
+<!-- 사이드 패널 -->
+<div class="side-panel" id="sidePanel">
+    <div style="text-align:right;">
+        <button id="closePanelBtn">❌</button>
+    </div>
+    <p>반가워요!</p>
+    <button class="btn">로그인</button>
+    <button class="btn">회원가입</button>
+    <hr>
+    <a href="#" class="btn">🌙 해몽하기</a><br>
+    <a href="/dict/" class="btn">📖 꿈 사전</a><br>
+    <a href="/combine/" class="btn">🧩 꿈 조합기</a><br>
+    <a href="#" class="btn">📘 내 일기장</a><br>
+    <a href="#" class="btn">📊 분석 리포트</a>
+</div>
+
+<script src="{% static 'js/header.js' %}"></script>
+
