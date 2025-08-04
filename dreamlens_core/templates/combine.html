@@ -3,9 +3,9 @@
 
 <form method="post" id="dream-form">
     {% csrf_token %}
-    <input type="text" name="kw1" placeholder="키워드 1" value="{{ kw1|default:'' }}" />
-    <input type="text" name="kw2" placeholder="키워드 2" value="{{ kw2|default:'' }}" />
-    <input type="text" name="kw3" placeholder="키워드 3" value="{{ kw3|default:'' }}" />
+    <input type="text" name="kw1" placeholder="키워드 1" value="{{ kw1|default:'' }}" /><br>
+    <input type="text" name="kw2" placeholder="키워드 2" value="{{ kw2|default:'' }}" /><br>
+    <input type="text" name="kw3" placeholder="키워드 3" value="{{ kw3|default:'' }}" /><br>
     <button type="submit" id="combine-btn" {% if loading %}disabled{% endif %}>
         꿈 조합하기
     </button>
