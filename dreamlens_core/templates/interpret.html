@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DreamLens - AI 꿈 해몽</title>
+    <!-- Bootstrap CDN for basic styling -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 800px;
+        }
+        .card {
+            border: none;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .spinner-container {
+            display: none; /* Initially hidden */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.7);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+        .result-section {
+            white-space: pre-wrap; /* Preserve line breaks from AI response */
+        }
+    </style>
+</head>
+<body>
+    <!-- 로딩 스피너 -->
+    <div class="spinner-container" id="loadingSpinner">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="ms-3 mb-0">AI가 꿈을 분석하고 있습니다...</p>
+    </div>
+
+    <div class="container my-5">
+        <div class="text-center mb-4">
+            <h1 class="display-4">🔮 DreamLens</h1>
+            <p class="lead">당신의 무의식이 보낸 편지를 함께 열어볼까요?</p>
+        </div>
+
+        <div class="card">
+            <div class="card-body p-4">
+                <!-- 꿈 입력 폼 -->
+                <form id="dreamForm" method="POST" action="{% url 'dream_interpreter' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="dream_content" class="form-label fs-5">어떤 꿈을 꾸셨나요?</label>
+                        <textarea class="form-control" id="dream_content" name="input_text" rows="6" placeholder="돌아가신 할머니가 환하게 웃으며 돈을 주셨어요." required>{{ original_dream }}</textarea>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">해몽하기</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 해몽 결과 표시 영역 -->
+        {% if interpretation_result %}
+        <div class="mt-5">
+            <!-- 1. 꿈 종류 분석 -->
+            {% if classification_result %}
+            <div class="card mb-4">
+                <div class="card-header fs-5">📊 AI가 분석한 나의 꿈 종류</div>
+                <div class="card-body result-section">
+                    <p class="card-text text-success fw-bold">{{ classification_result }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- 2. 상세 해몽 -->
+            <div class="card mb-4">
+                <div class="card-header fs-5">🌙 AI가 들려주는 나의 꿈 이야기</div>
+                <div class="card-body result-section">
+                    <p class="card-text">{{ interpretation_result }}</p>
+                </div>
+            </div>
+
+            <!-- 3. 핵심 키워드 -->
+            {% if keywords_result %}
+            <div class="card mb-4">
+                <div class="card-header fs-5">🔑 꿈의 핵심 키워드</div>
+                <div class="card-body result-section">
+                    <p class="card-text text-info">{{ keywords_result }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- 4. 세 줄 요약 -->
+            {% if summary_result %}
+            <div class="card mb-4">
+                <div class="card-header fs-5">✨ 세 줄 요약</div>
+                <div class="card-body result-section">
+                    <p class="card-text">{{ summary_result }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- 여기에 '일기장에 추가하기', '공유하기' 버튼 등을 추가할 수 있습니다. -->
+        </div>
+        {% endif %}
+
+        <!-- 오류 메시지 표시 영역 -->
+        {% if error %}
+        <div class="alert alert-danger mt-4" role="alert">
+            {{ error }}
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        // 폼 제출 시 로딩 스피너를 표시하는 스크립트
+        document.getElementById('dreamForm').addEventListener('submit', function() {
+            document.getElementById('loadingSpinner').style.display = 'flex';
+        });
+    </script>
+</body>
+</html>

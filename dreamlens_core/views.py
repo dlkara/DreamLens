@@ -9,6 +9,8 @@ from django.shortcuts import render,redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+import faiss
+import numpy as np
 
 from django.contrib.auth import get_user_model   # ✅ 현재 설정된 User 모델 반환
 User = get_user_model()
@@ -28,8 +30,154 @@ def index(request):
 # ------------------------------
 # 1. 꿈 해몽
 # ------------------------------
+# 필요한 파일 경로들
+INDEX_PATH = os.path.join(BASE_DIR, 'vectorDB', 'dream.index')
+METADATA_PATH = os.path.join(BASE_DIR, 'data', 'meta_dream.json')
+ORIGINAL_DATA_PATH = os.path.join(BASE_DIR, 'data', 'dream.json')
 
-# TODO : 지우
+faiss_index = None
+metadata = None
+categories = {"대분류": [], "소분류": []}
+
+try:
+    # Faiss 인덱스와 메타데이터 로드
+    print("✅ Django 서버 시작: 기존 인덱스와 메타데이터를 불러옵니다.")
+    faiss_index = faiss.read_index(INDEX_PATH)
+    with open(METADATA_PATH, "r", encoding="utf-8") as f:
+        metadata = json.load(f)
+
+    # 분류 기준을 위한 카테고리 정보 로드
+    with open(ORIGINAL_DATA_PATH, 'r', encoding='utf-8') as f:
+        total_data = json.load(f)
+    main_cats, sub_cats = set(), set()
+    for main_cat, sub_cat_data in total_data.items():
+        main_cats.add(main_cat.replace('"', ""))
+        for sub_cat in sub_cat_data.keys():
+            sub_cats.add(sub_cat)
+    categories["대분류"] = sorted(list(main_cats))
+    categories["소분류"] = sorted(list(sub_cats))
+
+except Exception as e:
+    print(f"⚠️ 경고: 데이터 로딩 중 오류 발생 ({e}). 해몽 기능이 정상 작동하지 않을 수 있습니다.")
+
+
+# ------------------------------
+# 꿈 해몽 LLM
+# AI 로직 함수
+# ------------------------------
+
+def get_embedding(text, model="text-embedding-3-small"):
+    """사용자 텍스트를 OpenAI 임베딩으로 변환하는 함수"""
+    response = openai.embeddings.create(input=[text], model=model)
+    return np.array([response.data[0].embedding], dtype='float32')
+
+def generate_llm_response(user_dream, retrieved_data, categories_data):
+    """검색된 데이터와 분류 기준을 바탕으로 LLM에게 최종 답변을 요청하는 함수"""
+    retrieved_data_json = json.dumps(retrieved_data, ensure_ascii=False)
+    retrieved_items = json.loads(retrieved_data_json)
+    reference_texts = []
+    for i, item in enumerate(retrieved_items):
+        clean_dream = item.get('꿈', '').strip()
+        clean_interp = item.get('해몽', '').strip()
+        reference_texts.append(f"{i + 1}. 꿈: {clean_dream}\n   해몽: {clean_interp}")
+
+    reference_section = "\n\n".join(reference_texts)
+
+    prompt = f"""
+당신은 꿈 해몽과 분류에 매우 능숙한 AI 전문가입니다. 당신의 임무는 아래 정보를 바탕으로 사용자의 꿈을 분석하고, 네 부분으로 구성된 답변을 생성하는 것입니다.
+
+---
+[분류 기준 정보]
+- 가능한 대분류: {categories_data['대분류']}
+- 가능한 소분류: {categories_data['소분류']}
+
+[해몽 참고 정보]
+- 유사한 꿈 데이터베이스:
+{reference_section}
+---
+[사용자 꿈 이야기]:
+{user_dream}
+---
+[작업 지침 및 출력 형식]:
+당신은 반드시 아래 4개의 부분으로 구성된 답변을 생성해야 합니다.
+각 부분은 지정된 구분자로 시작해야 합니다.
+**절대로, 절대로 각 부분에 제목이나 번호(예: "2. 상세 해몽:")를 붙이지 마세요. 오직 내용만 작성해야 합니다.**
+
+- **첫 번째 부분**: `[분류시작]`으로 시작합니다. [분류 기준 정보]를 참고하여 "대분류: [선택]\n소분류: [선택]" 형식으로 꿈을 분류하세요. 일치하는 것이 없으면 "대분류: 해당 없음\n소분류: 해당 없음" 이라고 적으세요.
+
+- **두 번째 부분**: `[해몽시작]`으로 시작합니다. "사용자님의 꿈을 자세히 살펴보니..." 와 같이 친근한 말투로 시작하여 상세한 해몽과 따뜻한 조언을 작성하세요.
+
+- **세 번째 부분**: `[키워드추출]`으로 시작합니다. 꿈의 의미를 압축하는 핵심 명사 키워드 3개를 쉼표(,)로 구분해서 나열하세요.
+
+- **네 번째 부분**: `[요약시작]`으로 시작합니다. 상세 해몽의 내용을 세 개의 문장으로 요약합니다.
+"""
+    try:
+        response = openai.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": "당신은 꿈을 분석하고, 분류하고, 해몽하고, 요약하는 다재다능한 AI 전문가입니다."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.7,
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        return f"AI 답변 생성 중 오류가 발생했습니다: {e}"
+
+
+def dream_interpreter(request):
+    context = {}
+    # GET 요청
+    if request.method == "GET":
+        return render(request, 'interpret.html')
+
+    # POST 요청 (해몽하기 버튼 눌렀을 시)
+    elif request.method == "POST":
+        dream = request.POST['input_text'].strip()
+        if dream and faiss_index is not None:
+            # 1. 사용자 꿈 임베딩 및 Faiss 검색
+            query_vector = get_embedding(dream)
+            k = 5
+            distances, indices = faiss_index.search(query_vector, k)
+            retrieved_results = [metadata[i] for i in indices[0]]
+
+            # 2. LLM 호출하여 원본 답변 생성
+            raw_answer = generate_llm_response(dream, retrieved_results, categories)
+
+            # 3. LLM 답변을 4개의 부분으로 파싱
+            try:
+                _, classification_part = raw_answer.split("[분류시작]", 1)
+                classification_part, interpretation_part = classification_part.split("[해몽시작]", 1)
+                interpretation_part, keywords_part = interpretation_part.split("[키워드추출]", 1)
+                keywords_part, summary_part = keywords_part.split("[요약시작]", 1)
+
+                context['classification_result'] = classification_part.strip()
+                context['interpretation_result'] = interpretation_part.strip()
+                context['keywords_result'] = keywords_part.strip()
+                context['summary_result'] = summary_part.strip().replace('`', "")
+
+                print(classification_part.strip())
+                print(interpretation_part.strip())
+                print(keywords_part.strip())
+                print(summary_part.strip())
+
+            except ValueError:
+                # LLM이 형식에 맞지 않게 답변했을 경우를 대비한 예외 처리
+                context['error'] = "AI가 답변을 생성하는 데 실패했습니다. 잠시 후 다시 시도해주세요."
+                context['interpretation_result'] = raw_answer  # 원본 답변이라도 보여줌
+        else:
+            # 기타 오류 처리
+            if not dream:
+                context['error'] = "꿈 내용을 입력해주세요."
+            else:
+                context['error'] = "해몽 데이터베이스를 불러올 수 없습니다. 관리자에게 문의하세요."
+
+        return render(request, 'interpret.html', context)
+
+    # TODO: 로그인과 비로그인 따라 구분하기
+    # 비로그인 사용자
+
+    # 로그인 사용자
 
 
 

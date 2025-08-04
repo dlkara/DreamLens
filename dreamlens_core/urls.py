@@ -1,4 +1,4 @@
-from django.urls import path, include
+from django.urls import path
 from . import views
 
 urlpatterns = [
@@ -15,4 +15,5 @@ urlpatterns = [
     path('register/', views.register_view, name='register'),
     path('mypage/', views.mypage_view, name='mypage'),
 
+    path('interpret/', views.dream_interpreter, name='dream_interpreter'),
 ]
