@@ -1,0 +1,27 @@
+<form method="post" id="dream-form">
+    {% csrf_token %}
+    <input type="text" name="kw1" placeholder="키워드 1" value="{{ kw1|default:'' }}" />
+    <input type="text" name="kw2" placeholder="키워드 2" value="{{ kw2|default:'' }}" />
+    <input type="text" name="kw3" placeholder="키워드 3" value="{{ kw3|default:'' }}" />
+    <button type="submit" id="combine-btn" {% if loading %}disabled{% endif %}>
+        꿈 조합하기
+    </button>
+</form>
+
+{% if loading %}
+  <div id="loading-message">🔄 해몽 중입니다...</div>
+{% endif %}
+
+{% if interpretation %}
+  <div id="result-block">
+    <h3>🔮 해몽 결과는 …</h3>
+    <p>{{ interpretation|linebreaks }}</p>
+  </div>
+{% endif %}
+
+{% if summary %}
+  <div id="summary-box">
+    <strong>🧾 요약</strong>
+    <p>{{ summary|linebreaks }}</p>
+  </div>
+{% endif %}
