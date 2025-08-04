@@ -318,6 +318,8 @@ def register_view(request):
         password = request.POST.get('password')
         password2 = request.POST.get('password2')
         nickname = request.POST.get('nickname')
+        birth = request.POST.get('birth')
+        gender = request.POST.get('gender')
 
         if password != password2:
             messages.error(request, '비밀번호가 일치하지 않습니다.')
@@ -327,12 +329,18 @@ def register_view(request):
             messages.error(request, '이미 존재하는 아이디입니다.')
             return redirect('register')
 
-        user = User.objects.create_user(username=username, password=password)
-        user.first_name = nickname  # 닉네임을 first_name에 임시 저장
+        user = User.objects.create_user(
+            username=username,
+            password=password,
+            nickname=nickname,
+            birth=birth,
+            gender=gender
+        )
         user.save()
         return redirect('login')
 
     return render(request, 'register-user.html')
+
 
 
 def login_view(request):
