@@ -1,1 +1,41 @@
-/* TODO : 주경 */
+/* 기본 햄버거 버튼 */
+.hamburger {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    font-size: 24px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    z-index: 1001;
+}
+
+/* 슬라이딩 사이드 패널 */
+.side-panel {
+    position: fixed;
+    top: 0;
+    left: -300px; /* 처음에는 화면 밖에 숨겨둠 */
+    width: 250px;
+    height: 100%;
+    background-color: #f1f1f1;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.2);
+    padding: 20px;
+    transition: left 0.3s ease-in-out;
+    z-index: 1000;
+}
+
+/* 패널이 열렸을 때 클래스 */
+.side-panel.open {
+    left: 0;
+}
+
+.side-panel .btn {
+    display: block;
+    margin: 10px 0;
+    padding: 10px;
+    background-color: #eee;
+    border: none;
+    text-align: left;
+    width: 100%;
+    cursor: pointer;
+}

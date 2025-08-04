@@ -21,6 +21,10 @@ JSON_PATH = BASE_DIR / "data" / "dream_clean.json"
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
+def index(request):
+    return render(request, "main.html")
+
+
 # ------------------------------
 # 1. 꿈 해몽
 # ------------------------------
