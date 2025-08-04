@@ -1,23 +1,66 @@
-<h2>내 정보 수정</h2>
-<form method="post">
-  {% csrf_token %}
-  <div>
-    {{ form.username.label_tag }} {{ form.username }}
-  </div>
-  <div>
-    {{ form.password.label_tag }} {{ form.password }}
-  </div>
-  <div>
-    {{ form.password_confirm.label_tag }} {{ form.password_confirm }}
-  </div>
-  <div>
-    {{ form.nickname.label_tag }} {{ form.nickname }}
-  </div>
-  <div>
-    {{ form.birthdate.label_tag }} {{ form.birthdate }}
-  </div>
-  <div>
-    {{ form.gender.label_tag }} {{ form.gender }}
-  </div>
-  <button type="submit">저장하기</button>
-</form>
+
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">마이페이지</h2>
+
+  <form method="post">
+    {% csrf_token %}
+
+    <!-- 아이디 (수정 불가) -->
+    <div class="form-group mb-3">
+      <label for="username">아이디</label>
+      <input type="text" id="username" name="username" class="form-control" value="{{ user.username }}" readonly>
+    </div>
+
+    <!-- 비밀번호 -->
+    <div class="form-group mb-3">
+      <label for="password">새 비밀번호</label>
+      <input type="password" id="password" name="password" class="form-control">
+    </div>
+
+    <!-- 비밀번호 확인 -->
+    <div class="form-group mb-3">
+      <label for="password_confirm">비밀번호 확인</label>
+      <input type="password" id="password_confirm" name="password_confirm" class="form-control">
+    </div>
+
+    <!-- 닉네임 -->
+    <div class="form-group mb-3">
+      <label for="nickname">닉네임</label>
+      <input type="text" id="nickname" name="nickname" class="form-control" value="{{ form.nickname.value|default:user.nickname }}">
+    </div>
+
+    <!-- 생년월일 -->
+    <div class="form-group mb-3">
+      <label for="birth">생년월일</label>
+      <input type="date" id="birth" name="birth" class="form-control" value="{{ form.birth.value|default:user.birth|date:'Y-m-d' }}">
+    </div>
+
+    <!-- 성별 -->
+    <div class="form-group mb-4">
+      <label>성별</label><br>
+      <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" name="gender" id="male" value="남자" {% if form.gender.value == '남자' or user.gender == '남자' %}checked{% endif %}>
+        <label class="form-check-label" for="male">남자</label>
+      </div>
+      <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" name="gender" id="female" value="여자" {% if form.gender.value == '여자' or user.gender == '여자' %}checked{% endif %}>
+        <label class="form-check-label" for="female">여자</label>
+      </div>
+    </div>
+
+    <!-- 수정 버튼 -->
+    <button type="submit" class="btn btn-primary">수정하기</button>
+  </form>
+
+  <hr class="my-4">
+
+  <!-- 회원탈퇴 버튼 -->
+  <form method="post" action="{% url 'withdrawal' %}">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">회원탈퇴</button>
+  </form>
+</div>
+{% endblock %}

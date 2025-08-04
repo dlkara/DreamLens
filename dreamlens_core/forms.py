@@ -10,12 +10,20 @@ class DreamForm(forms.Form):
 User = get_user_model()
 
 class MyPageForm(forms.ModelForm):
-    password = forms.CharField(widget=forms.PasswordInput(), required=False)
-    password_confirm = forms.CharField(widget=forms.PasswordInput(), required=False)
+    password = forms.CharField(
+        widget=forms.PasswordInput(),
+        required=False,
+        label="새 비밀번호"
+    )
+    password_confirm = forms.CharField(
+        widget=forms.PasswordInput(),
+        required=False,
+        label="새 비밀번호 확인"
+    )
 
     class Meta:
         model = User
-        fields = ['username', 'password', 'password_confirm', 'nickname', 'birthdate', 'gender']
+        fields = ['username', 'password', 'password_confirm', 'nickname', 'birth', 'gender']
         widgets = {
             'username': forms.TextInput(attrs={'readonly': 'readonly'}),
         }

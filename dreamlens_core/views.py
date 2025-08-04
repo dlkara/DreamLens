@@ -6,11 +6,12 @@ from django.conf import settings
 from django.shortcuts import render
 from .models import DreamDict
 from django.shortcuts import render,redirect
-from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 
+from django.contrib.auth import get_user_model   # ✅ 현재 설정된 User 모델 반환
+User = get_user_model()
 
 # ------------------------------
 # 0. 공통 설정
@@ -203,22 +204,21 @@ def logout_view(request):
 
 # 마이페이지
 
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
-from django.contrib import messages
+
 from .forms import MyPageForm
 
 @login_required
 def mypage_view(request):
-    user = request.user  # 현재 로그인한 사용자
+    user = request.user
 
     if request.method == 'POST':
         form = MyPageForm(request.POST, instance=user)
         if form.is_valid():
             form.save()
-            messages.success(request, "회원 정보가 성공적으로 수정되었습니다.")
-            return redirect('main')  # 수정 후 메인 페이지로 이동
+            return redirect('mypage')  # 마이페이지로 리다이렉트
     else:
         form = MyPageForm(instance=user)
 
-    return render(request, 'mypage.html', {'form': form})
+    return render(request, 'mypage.html', {
+        'form': form
+    })
