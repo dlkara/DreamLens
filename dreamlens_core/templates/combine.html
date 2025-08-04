@@ -1,3 +1,6 @@
+{% load static %}
+<script src="{% static 'js/combine.js' %}"></script>
+
 <form method="post" id="dream-form">
     {% csrf_token %}
     <input type="text" name="kw1" placeholder="키워드 1" value="{{ kw1|default:'' }}" />
