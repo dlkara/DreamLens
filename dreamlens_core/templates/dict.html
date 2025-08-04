@@ -1,0 +1,93 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>꿈 사전</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 40px;
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            vertical-align: top;
+        }
+
+        th {
+            background-color: #f5f5f5;
+        }
+
+        select {
+            padding: 5px 10px;
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>꿈 사전</h2>
+
+    <form method="get">
+        <label for="category">대분류:</label>
+        <select name="category" id="category" onchange="this.form.submit()">
+            <option value="">-- 선택하기 --</option>
+            {% for category in categories %}
+            <option value="{{ category }}" {% if category == selected_category %}selected{% endif %}>
+                {{ category }}
+            </option>
+            {% endfor %}
+        </select>
+        <br>
+
+        {% if keywords %}
+        <label for="keyword">키워드:</label>
+        <select name="keyword" id="keyword" onchange="this.form.submit()">
+            <option value="">-- 전체 보기 --</option>
+            {% for kw in keywords %}
+            <option value="{{ kw }}" {% if kw == selected_keyword %}selected{% endif %}>{{ kw }}</option>
+            {% endfor %}
+        </select>
+        {% endif %}
+    </form>
+
+    {% if sub_items %}
+    <h3>{{ selected_category }}{% if selected_keyword %} > {{selected_keyword}}{% endif %} 관련 해몽</h3>
+    <table>
+        <tr>
+            <th>꿈</th>
+            <th>의미</th>
+        </tr>
+        {% for item in sub_items %}
+        <tr>
+            <td>{{ item.dream }}</td>
+            <td>{{ item.interpret }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% elif selected_category %}
+    <p><strong>해당 카테고리에 등록된 해몽 정보가 없습니다.</strong></p>
+    {% endif %}
+
+</body>
+
+<script src="{% static 'js/dict.js' %}"></script>
+
+</html>
