@@ -10,4 +10,5 @@ urlpatterns = [
 
     # 꿈 조합기
     path('combine/', views.dream_combiner, name='dream_combiner'),
+    path('interpret/', views.dream_interpreter, name='dream_interpreter'),
 ]
