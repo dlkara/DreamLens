@@ -1,3 +1,10 @@
+DROP TABLE IF EXISTS Diary;
+DROP TABLE IF EXISTS DreamDict;
+DROP TABLE IF EXISTS Emotion;
+DROP TABLE IF EXISTS DreamType;
+DROP TABLE IF EXISTS Interpretation;
+DROP TABLE IF EXISTS Users;
+
 CREATE TABLE Diary
 (
     id                INT      NOT NULL AUTO_INCREMENT,
@@ -11,19 +18,20 @@ CREATE TABLE Diary
 CREATE TABLE DreamDict
 (
     id       INT     NOT NULL AUTO_INCREMENT,
-    category VARCHAR NOT NULL COMMENT '대분류',
-    sub_category VARCHAR NOT NULL COMMENT '소분류 키워드',
+    category VARCHAR(100) NOT NULL COMMENT '대분류',
+    sub_category VARCHAR(100) NOT NULL COMMENT '소분류 키워드',
     meaning  TEXT    NOT NULL COMMENT '상징적 의미',
     PRIMARY KEY (id)
 ) COMMENT '꿈 사전';
 
-ALTER TABLE DreamDict
-    ADD CONSTRAINT UQ_keyword UNIQUE (keyword);
+-- 삭제.
+-- ALTER TABLE DreamDict
+--     ADD CONSTRAINT UQ_keyword UNIQUE (keyword);
 
 CREATE TABLE DreamType
 (
     id   INT NOT NULL AUTO_INCREMENT,
-    type VARCHAR(10) NULL     COMMENT '길몽/흉몽/일반몽',
+    type enum('good', 'bad', 'normal') NULL     COMMENT '길몽/흉몽/일반몽',
     PRIMARY KEY (id)
 ) COMMENT '꿈 종류';
 
@@ -44,43 +52,39 @@ CREATE TABLE Interpretation
     user_id    INT  NOT NULL,
     input_text TEXT NOT NULL COMMENT '꿈 내용',
     result     TEXT NOT NULL COMMENT '해몽 결과',
-    keywords   VARCHAR(50) NULL COMMENT '키워드',
+    keywords   VARCHAR(100) NULL COMMENT '키워드',
     summary    TEXT NULL,
     created_at DATETIME NULL,
     PRIMARY KEY (id)
 ) COMMENT '해몽 결과 로그';
 
-CREATE TABLE User
+CREATE TABLE Users
 (
     id          INT      NOT NULL AUTO_INCREMENT,
-    username    VARCHAR  NOT NULL,
-    password    VARCHAR  NOT NULL,
-    nickname    VARCHAR  NOT NULL,
+    username    VARCHAR(50)  NOT NULL,
+    password    VARCHAR(50)  NOT NULL,
+    nickname    VARCHAR(50)  NOT NULL,
     birth       DATE NULL,
-    gender      VARCHAR NULL,
+    gender      enum('M', 'F', 'N') NULL,
     created_at  DATETIME NOT NULL DEFAULT now(),
-    provider    VARCHAR NULL,
-    provider_id VARCHAR NULL,
+    provider    VARCHAR(200) NULL,
+    provider_id VARCHAR(200) NULL,
     PRIMARY KEY (id)
 ) COMMENT '회원';
 
-ALTER TABLE User
+ALTER TABLE Users
     ADD CONSTRAINT UQ_username UNIQUE (username);
 
 ALTER TABLE Interpretation
-    ADD CONSTRAINT FK_User_TO_Interpretation
+    ADD CONSTRAINT FK_Users_TO_Interpretation
         FOREIGN KEY (user_id)
-            REFERENCES User (id);
+            REFERENCES Users (id)
+            ON DELETE CASCADE ;
 
 ALTER TABLE Diary
     ADD CONSTRAINT FK_Interpretation_TO_Diary
         FOREIGN KEY (interpretation_id)
             REFERENCES Interpretation (id);
-
-ALTER TABLE Diary
-    ADD CONSTRAINT FK_User_TO_Diary
-        FOREIGN KEY (user_id)
-            REFERENCES User (id);
 
 ALTER TABLE Diary
     ADD CONSTRAINT FK_Emotion_TO_Diary
