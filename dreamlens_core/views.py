@@ -1,11 +1,22 @@
 import os
 import openai
+import json
+from pathlib import Path
+from django.conf import settings
+from django.shortcuts import render
+from .models import DreamDict
 from django.shortcuts import render,redirect
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 
 
+
+# ------------------------------
+# 0. 공통 설정
+# ------------------------------
+BASE_DIR = Path(__file__).resolve().parent.parent
+JSON_PATH = BASE_DIR / "data" / "dream_clean.json"
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
@@ -18,9 +29,51 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
 
+# ------------------------------
+# 2. 꿈 사전
+# ------------------------------
+def dream_dict_view(request):
+    from django.conf import settings
+    import os, json
+
+    category = request.GET.get("category", "").replace('"', '')
+    keyword_filter = request.GET.get("keyword", "").strip()
+
+    with open(os.path.join(settings.BASE_DIR, 'data/dream_clean.json'), encoding='utf-8') as f:
+        raw_data = json.load(f)
+
+    sub_items = []
+    keyword_list = []
+    if category:
+        items = raw_data.get(category, {})
+        keyword_list = sorted(items.keys())  # ✅ 키워드 목록 추출
+        seen_meanings = set()
+
+        for keyword, entries in items.items():
+            if keyword_filter and keyword != keyword_filter:
+                continue
+            for entry in entries:
+                meaning = entry['해몽']
+                if meaning not in seen_meanings:
+                    sub_items.append({
+                        "keyword": keyword,
+                        "dream": entry["꿈"],
+                        "interpret": meaning
+                    })
+                    seen_meanings.add(meaning)
+
+    context = {
+        "categories": list(raw_data.keys()),
+        "selected_category": category,
+        "selected_keyword": keyword_filter,
+        "keywords": keyword_list,
+        "sub_items": sub_items,
+    }
+    return render(request, "dict.html", context)
+
 
 # ------------------------------
-# 2. 꿈 조합기
+# 3. 꿈 조합기
 # ------------------------------
 
 def generate_interpretation(keywords):
