@@ -1,16 +1,21 @@
-document.addEventListener("DOMContentLoaded", function () {
-    const categorySelect = document.getElementById("category");
-    const keywordWrapper = document.getElementById("keyword-wrapper");
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('dict-form');
+    const category = document.getElementById('category');
+    const subcat = document.getElementById('subcategory');
 
-    function updateKeywordVisibility() {
-        if (categorySelect.value) {
-            keywordWrapper.style.display = "inline";
+    // 대분류 변경 시 → 소분류 활성화 & 폼 제출
+    category.addEventListener('change', () => {
+        if (category.value) {
+            subcat.disabled = false;
         } else {
-            keywordWrapper.style.display = "none";
+            subcat.value = '';
+            subcat.disabled = true;
         }
-    }
+        form.submit();
+    });
 
-    updateKeywordVisibility();
-
-    categorySelect.addEventListener("change", updateKeywordVisibility);
+    // 소분류 변경 시 → 폼 제출
+    subcat.addEventListener('change', () => {
+        form.submit();
+    });
 });

@@ -6,21 +6,22 @@ from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import render
 from .models import DreamDict
-from django.shortcuts import render,redirect
+from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 import faiss
 import numpy as np
 
-from django.contrib.auth import get_user_model   # ✅ 현재 설정된 User 모델 반환
+from django.contrib.auth import get_user_model  # ✅ 현재 설정된 User 모델 반환
+
 User = get_user_model()
 
 # ------------------------------
 # 0. 공통 설정
 # ------------------------------
-BASE_DIR = Path(__file__).resolve().parent.parent
-JSON_PATH = BASE_DIR / "data" / "dream_clean.json"
+BASE_DIR = settings.BASE_DIR
+JSON_PATH = BASE_DIR / "data" / "meta_dream.json"
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
@@ -62,15 +63,12 @@ except Exception as e:
     print(f"⚠️ 경고: 데이터 로딩 중 오류 발생 ({e}). 해몽 기능이 정상 작동하지 않을 수 있습니다.")
 
 
-# ------------------------------
-# 꿈 해몽 LLM
-# AI 로직 함수
-# ------------------------------
-
+# 꿈 해몽 LLM - AI 로직 함수
 def get_embedding(text, model="text-embedding-3-small"):
     """사용자 텍스트를 OpenAI 임베딩으로 변환하는 함수"""
     response = openai.embeddings.create(input=[text], model=model)
     return np.array([response.data[0].embedding], dtype='float32')
+
 
 def generate_llm_response(user_dream, retrieved_data, categories_data):
     """검색된 데이터와 분류 기준을 바탕으로 LLM에게 최종 답변을 요청하는 함수"""
@@ -181,55 +179,58 @@ def dream_interpreter(request):
     # 로그인 사용자
 
 
-
-
 # ------------------------------
 # 2. 꿈 사전
 # ------------------------------
-def dream_dict_view(request):
-    from django.conf import settings
-    import os, json
+def dream_dict(request):
+    # 1) 원본 JSON 로드
+    json_fp = os.path.join(settings.BASE_DIR, 'data', 'meta_dream.json')
+    with open(json_fp, encoding='utf-8') as f:
+        raw = json.load(f)
 
-    category = request.GET.get("category", "").replace('"', '')
-    keyword_filter = request.GET.get("keyword", "").strip()
+    # 2) 클리닝 & 데이터 재구성
+    data = []
+    for item in raw:
+        cat = item.get('대분류', '').strip().strip('"')
+        sub = item.get('소분류', '').strip().strip('"')
+        data.append({**item, '대분류': cat, '소분류': sub})
 
-    with open(os.path.join(settings.BASE_DIR, 'data/dream_clean.json'), encoding='utf-8') as f:
-        raw_data = json.load(f)
+    # 3) 대분류 리스트
+    categories = sorted({d['대분류'] for d in data})
 
-    sub_items = []
-    keyword_list = []
-    if category:
-        items = raw_data.get(category, {})
-        keyword_list = sorted(items.keys())  # ✅ 키워드 목록 추출
-        seen_meanings = set()
+    # 4) 소분류 flat 리스트 (cat-sub 쌍)
+    sub_list = []
+    seen = set()
+    for d in data:
+        pair = (d['대분류'], d['소분류'])
+        if pair not in seen:
+            seen.add(pair)
+            sub_list.append({'cat': d['대분류'], 'sub': d['소분류']})
 
-        for keyword, entries in items.items():
-            if keyword_filter and keyword != keyword_filter:
-                continue
-            for entry in entries:
-                meaning = entry['해몽']
-                if meaning not in seen_meanings:
-                    sub_items.append({
-                        "keyword": keyword,
-                        "dream": entry["꿈"],
-                        "interpret": meaning
-                    })
-                    seen_meanings.add(meaning)
+    # 5) GET 파라미터
+    sel_cat = request.GET.get('category', '')
+    sel_sub = request.GET.get('subcategory', '')
 
-    context = {
-        "categories": list(raw_data.keys()),
-        "selected_category": category,
-        "selected_keyword": keyword_filter,
-        "keywords": keyword_list,
-        "sub_items": sub_items,
-    }
-    return render(request, "dict.html", context)
+    # 6) 필터링된 결과
+    filtered = []
+    if sel_cat and sel_sub:
+        filtered = [
+            item for item in data
+            if item['대분류'] == sel_cat and item['소분류'] == sel_sub
+        ]
+
+    return render(request, 'dict.html', {
+        'categories': categories,
+        'sub_list': sub_list,
+        'filtered': filtered,
+        'sel_cat': sel_cat,
+        'sel_sub': sel_sub,
+    })
 
 
 # ------------------------------
 # 3. 꿈 조합기
 # ------------------------------
-
 def generate_interpretation(keywords):
     keyword_text = ", ".join(keywords)
 
@@ -312,6 +313,30 @@ def dream_combiner(request):
 
     return render(request, "combine.html", context)
 
+
+# ------------------------------
+# 4. 꿈 일기장  TODO : 현정
+# ------------------------------
+
+
+# ------------------------------
+# 5. 분석 리포트 TODO : 지우
+# ------------------------------
+
+
+# ------------------------------
+# 6. 로그인/회원가입/마이페이지
+# ------------------------------
+
+# 회원가입
+def register_view(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        password2 = request.POST.get('password2')
+        nickname = request.POST.get('nickname')
+        birth = request.POST.get('birth')
+        gender = request.POST.get('gender')
 # 로그인, 회원가입 - 안주경
 from django.contrib.auth import get_user_model
 from django.shortcuts import render, redirect
@@ -373,6 +398,7 @@ def check_username(request):
 
 
 
+# 로그인
 def login_view(request):
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -392,9 +418,8 @@ def logout_view(request):
     logout(request)
     return redirect('/')
 
+
 # 마이페이지
-
-
 from .forms import MyPageForm
 
 # accounts/views.py

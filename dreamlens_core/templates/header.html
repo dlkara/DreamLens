@@ -15,11 +15,13 @@
         <button id="closePanelBtn">❌</button>
     </div>
     <p>만나서 반갑습니다!</p>
-    <a href="#" class="btn">로그인</a>
-    <a href="#" class="btn">회원가입</a>
+    <a href="{% url 'login' %}" class="btn">로그인</a>
+    <a href="{% url 'register' %}" class="btn">회원가입</a>
+
+
     <hr>
-    <a href="#" class="btn">🔮 해몽하기</a>
-    <a href="{% url 'dream_dict_view' %}" class="btn">📖 꿈 사전</a>
+    <a href="{% url 'dream_interpreter' %}" class="btn">🔮 해몽하기</a>
+    <a href="{% url 'dream_dict' %}" class="btn">📖 꿈 사전</a>
     <a href="{% url 'dream_combiner' %}" class="btn">🧩 꿈 조합기</a>
     <a href="#" class="btn">📘 내 일기장</a>
     <a href="#" class="btn">📊 분석 리포트</a>
