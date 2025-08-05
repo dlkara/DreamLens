@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DreamLens - AI 꿈 해몽</title>
-    <!-- Bootstrap CDN for basic styling -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Google Fonts (Inter) 로드 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -22,7 +20,7 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
         .spinner-container {
-            display: none; /* Initially hidden */
+            display: none;
             position: fixed;
             top: 0;
             left: 0;
@@ -34,9 +32,8 @@
             align-items: center;
         }
         .result-section {
-            white-space: pre-wrap; /* Preserve line breaks from AI response */
+            white-space: pre-wrap;
         }
-
         .toast-container {
             position: fixed;
             bottom: 1rem;
@@ -46,111 +43,102 @@
     </style>
 </head>
 <body>
-    {% include 'header.html' %}
+{% include 'header.html' %}
 
-    <!-- 로딩 스피너 -->
-    <div class="spinner-container" id="loadingSpinner">
-        <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
-        </div>
-        <p class="ms-3 mb-0">AI가 꿈을 분석하고 있습니다...</p>
+<div class="spinner-container" id="loadingSpinner">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="ms-3 mb-0">AI가 꿈을 분석하고 있습니다...</p>
+</div>
+
+<div class="container my-5">
+    <div class="text-center mb-4">
+        <h1 class="display-4">🔮 DreamLens</h1>
+        <p class="lead">당신의 무의식이 보낸 편지를 함께 열어볼까요?</p>
     </div>
 
-    <div class="container my-5">
-        <div class="text-center mb-4">
-            <h1 class="display-4">🔮 DreamLens</h1>
-            <p class="lead">당신의 무의식이 보낸 편지를 함께 열어볼까요?</p>
-        </div>
-
-        <div class="card">
-            <div class="card-body p-4">
-                <!-- 꿈 입력 폼 -->
-                <form id="dreamForm" method="POST" action="{% url 'dream_interpreter' %}">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="dream_content" class="form-label fs-5">어떤 꿈을 꾸셨나요?</label>
-                        <textarea class="form-control" id="dream_content" name="input_text" rows="6" placeholder="돌아가신 할머니가 환하게 웃으며 돈을 주셨어요." required>{{ original_dream }}</textarea>
-                    </div>
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary btn-lg">해몽하기</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- 해몽 결과 표시 영역 -->
-        {% if interpretation_result %}
-        <div class="mt-5">
-            <!-- 1. 꿈 종류 분석 -->
-            {% if classification_result %}
-            <div class="card mb-4">
-                <div class="card-header fs-5">📊 AI가 분석한 나의 꿈 종류</div>
-                <div class="card-body result-section">
-                    <p class="card-text text-success fw-bold">{{ classification_result }}</p>
+    <div class="card">
+        <div class="card-body p-4">
+            <form id="dreamForm" method="POST" action="{% url 'dream_interpreter' %}">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="dream_content" class="form-label fs-5">어떤 꿈을 꾸셨나요?</label>
+                    <textarea class="form-control" id="dream_content" name="input_text" rows="6" placeholder="돌아가신 할머니가 환하게 웃으며 돈을 주셨어요." required>{{ original_dream }}</textarea>
                 </div>
-            </div>
-            {% endif %}
-
-            <!-- 2. 상세 해몽 -->
-            <div class="card mb-4">
-                <div class="card-header fs-5">🌙 AI가 들려주는 나의 꿈 이야기</div>
-                <div class="card-body result-section">
-                    <p class="card-text">{{ interpretation_result }}</p>
-                </div>
-            </div>
-
-            <!-- 3. 핵심 키워드 -->
-            {% if keywords_result %}
-            <div class="card mb-4">
-                <div class="card-header fs-5">🔑 꿈의 핵심 키워드</div>
-                <div class="card-body result-section">
-                    <p class="card-text text-info">{{ keywords_result }}</p>
-                </div>
-            </div>
-            {% endif %}
-
-            <!-- 4. 세 줄 요약 -->
-            {% if summary_result %}
-            <div class="card mb-4">
-                <div class="card-header fs-5">✨ 세 줄 요약</div>
-                <div class="card-body result-section">
-                    <p class="card-text">{{ summary_result }}</p>
-                </div>
-            </div>
-            {% endif %}
-
-
-            <div>
-                <div>
-                <!-- 일기장에 추가하는 버튼 -->
-                <form action="{% url 'diary_write' %}" method="POST" class="mb-0">
-                    {% csrf_token %}
-                    <input type="hidden" name="dream_content" value="{{ original_dream }}">
-                    <input type="hidden" name="interpretation_result" value="{{ interpretation_result }}">
-                    <!-- 다른 결과들도 hidden input으로 추가 가능 -->
-                    <button type="submit" class="btn btn-primary btn-lg">내 일기장에 추가</button>
-                </form>
-                </div>
-
-                <!-- 공유하기 버튼 -->
                 <div class="d-grid">
-                    <button onclick="openShareModal()" class="btn btn-primary btn-lg">
-                        공유하기
-                    </button>
+                    <button type="submit" class="btn btn-primary btn-lg">해몽하기</button>
                 </div>
+            </form>
+        </div>
+    </div>
+
+    {% if interpretation_result %}
+    <div class="mt-5">
+
+        {% if classification_result %}
+        <div class="card mb-4">
+            <div class="card-header fs-5">📊 AI가 분석한 나의 꿈 종류</div>
+            <div class="card-body result-section">
+                <p class="card-text text-success fw-bold">{{ classification_result }}</p>
             </div>
         </div>
+        {% endif %}
+
+        <div class="card mb-4">
+            <div class="card-header fs-5">🌙 AI가 들려주는 나의 꿈 이야기</div>
+            <div class="card-body result-section">
+                <p class="card-text">{{ interpretation_result }}</p>
+            </div>
+        </div>
+
+        {% if keywords_result %}
+        <div class="card mb-4">
+            <div class="card-header fs-5">🔑 꿈의 핵심 키워드</div>
+            <div class="card-body result-section">
+                <p class="card-text text-info">{{ keywords_result }}</p>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if summary_result %}
+        <div class="card mb-4">
+            <div class="card-header fs-5">✨ 세 줄 요약</div>
+            <div class="card-body result-section">
+                <p class="card-text">{{ summary_result }}</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="d-grid gap-3 mb-4">
+
+            <!-- ✅ 일기장 추가 버튼 -->
+            {% if user.is_authenticated %}
+            <form action="{% url 'diary_write' %}" method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="dream_content" value="{{ original_dream }}">
+                <input type="hidden" name="interpretation_result" value="{{ interpretation_result }}">
+                <button type="submit" class="btn btn-primary btn-lg">내 일기장에 추가</button>
+            </form>
+            {% else %}
+            <button class="btn btn-primary btn-lg" onclick="redirectToLogin()">내 일기장에 추가</button>
+            {% endif %}
+
+            <!-- 공유하기 버튼 -->
+            <button onclick="openShareModal()" class="btn btn-secondary btn-lg">공유하기</button>
+
+        </div>
+    </div>
     {% endif %}
 
-    <!-- 오류 메시지 표시 영역 -->
     {% if error %}
-        <div class="alert alert-danger mt-4" role="alert">
-            {{ error }}
-        </div>
+    <div class="alert alert-danger mt-4" role="alert">
+        {{ error }}
+    </div>
     {% endif %}
 </div>
 
-<!-- 공유 모달 (Bootstrap Modal) -->
+<!-- 공유 모달 -->
 <div class="modal fade" id="shareModal" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content rounded-4 shadow">
@@ -170,67 +158,54 @@
     </div>
 </div>
 
-<!-- 복사 완료 알림 메시지 (Bootstrap Toast) -->
+<!-- 복사 완료 Toast -->
 <div class="toast-container">
     <div id="clipboardToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="d-flex">
-            <div class="toast-body">
-                ✅ 클립보드에 복사되었습니다!
-            </div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
-                    aria-label="Close"></button>
+            <div class="toast-body">✅ 클립보드에 복사되었습니다!</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
         </div>
     </div>
 </div>
 
-    {% include 'footer.html' %}
+{% include 'footer.html' %}
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // 폼 제출 시 로딩 스피너를 표시하는 스크립트
     document.getElementById('dreamForm').addEventListener('submit', function () {
         document.getElementById('loadingSpinner').style.display = 'flex';
     });
 
-    // Bootstrap Modal 및 Toast 인스턴스 초기화
     const shareModalEl = document.getElementById('shareModal');
     const shareModal = new bootstrap.Modal(shareModalEl);
     const toastEl = document.getElementById('clipboardToast');
     const toast = new bootstrap.Toast(toastEl);
 
     function openShareModal() {
-        // 1. 페이지에 있는 특정 텍스트들을 가져오기
-        const interpretation = '{{ interpretation_result }}';
-        const keywords = '{{ keywords_result }}';
-
-        // 2. 가져온 텍스트들을 하나의 문자열로 예쁘게 조합
+        const interpretation = `{{ interpretation_result|escapejs }}`;
+        const keywords = `{{ keywords_result|escapejs }}`;
         const fullText = `🔮 DreamLens AI 꿈 해몽 결과 🔮\n\n🌙 상세 해몽\n${interpretation}\n\n🔑 꿈의 핵심 키워드\n${keywords}\n\n어젯밤 꾼 그 꿈, DreamLens에서 진짜 의미를 찾아보세요!\nhttps://www.dreamlens.com`;
-
-        // 3. 모달 안의 textarea에 조합된 텍스트를 채워 넣기
         document.getElementById('modalTextToCopy').value = fullText;
-
-        // 4. Bootstrap 모달을 화면에 표시
         shareModal.show();
     }
 
     function copyModalText() {
         const textElement = document.getElementById('modalTextToCopy');
         textElement.select();
-        textElement.setSelectionRange(0, 99999); // 모바일 기기 호환성
-
+        textElement.setSelectionRange(0, 99999);
         try {
-            // document.execCommand('copy')를 사용해 선택된 텍스트를 복사
             document.execCommand('copy');
-            toast.show(); // 복사 성공 알림
-            setTimeout(() => {
-                shareModal.hide(); // 0.5초 후 모달 닫기
-            }, 500);
+            toast.show();
+            setTimeout(() => { shareModal.hide(); }, 500);
         } catch (err) {
-            console.error('클립보드 복사 실패:', err);
             alert('클립보드 복사에 실패했습니다.');
         }
     }
-</script>
 
+    function redirectToLogin() {
+        alert("로그인이 필요한 서비스입니다.");
+        window.location.href = "{% url 'login' %}?next={{ request.path }}";
+    }
+</script>
 </body>
 </html>
