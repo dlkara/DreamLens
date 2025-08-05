@@ -1,5 +1,3 @@
-
-
 {% load static %}
 
 <link rel="stylesheet" href="{% static 'css/header.css' %}">
@@ -19,23 +17,39 @@
     </div>
 
     {% if user.is_authenticated %}
-    <p>안녕하세요!</p>
-    <h3>{{ user.nickname|default:user.username }} 님</h3>
-    <a href="{% url 'mypage' %}" class="btn">내 정보 수정</a>
-    <a href="{% url 'logout' %}" class="btn">로그아웃</a>
+        <p>안녕하세요!</p>
+        <h3>{{ user.nickname|default:user.username }} 님</h3>
+        <a href="{% url 'mypage' %}" class="btn">내 정보 수정</a>
+        <a href="{% url 'logout' %}" class="btn">로그아웃</a>
     {% else %}
-    <p>만나서 반갑습니다!</p>
-    <a href="{% url 'login' %}" class="btn">로그인</a>
-    <a href="{% url 'register_user' %}" class="btn">회원가입</a>
+        <p>만나서 반갑습니다!</p>
+        <a href="{% url 'login' %}" class="btn">로그인</a>
+        <a href="{% url 'register_user' %}" class="btn">회원가입</a>
     {% endif %}
 
-
     <hr>
+
+    <!-- 공개 접근 가능 -->
     <a href="{% url 'dream_interpreter' %}" class="btn">🔮 해몽하기</a>
     <a href="{% url 'dream_dict' %}" class="btn">📖 꿈 사전</a>
     <a href="{% url 'dream_combiner' %}" class="btn">🧩 꿈 조합기</a>
-    <a href="{% url 'diary_list' %}" class="btn">📘 내 일기장</a>
-    <a href="{% url 'report' %}" class="btn">📊 분석 리포트</a>
+
+    <!-- 로그인 필요: JS 체크 -->
+    <button class="btn" onclick="goToProtectedPage('{% url 'diary_list' %}')">📘 내 일기장</button>
+    <button class="btn" onclick="goToProtectedPage('{% url 'report' %}')">📊 분석 리포트</button>
 </div>
 
 <script src="{% static 'js/header.js' %}"></script>
+
+<!-- ✅ 로그인 상태 확인 및 보호된 메뉴 접근 제어 -->
+<script>
+    function goToProtectedPage(targetUrl) {
+        const isLoggedIn = "{{ user.is_authenticated|yesno:'true,false' }}" === "true";
+        if (isLoggedIn) {
+            window.location.href = targetUrl;
+        } else {
+            alert("로그인이 필요한 서비스입니다.");
+            window.location.href = "{% url 'login' %}";
+        }
+    }
+</script>
