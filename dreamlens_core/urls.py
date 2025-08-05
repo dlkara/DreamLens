@@ -15,8 +15,7 @@ urlpatterns = [
     path('register/', views.register_user, name='register_user'),
     path('check-username/', views.check_username, name='check_username'),
 
-
-    path('mypage/', views.mypage_view, name='mypage'),
+    path('mypage/', views.mypage, name='mypage'),
 
     path('interpret/', views.dream_interpreter, name='dream_interpreter'),
 ]

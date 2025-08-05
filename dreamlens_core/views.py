@@ -3,6 +3,7 @@ import openai
 import json
 from pathlib import Path
 from django.conf import settings
+from django.http import JsonResponse
 from django.shortcuts import render
 from .models import DreamDict
 from django.shortcuts import render,redirect
@@ -312,11 +313,13 @@ def dream_combiner(request):
     return render(request, "combine.html", context)
 
 # 로그인, 회원가입 - 안주경
-# views.py
+from django.contrib.auth import get_user_model
 from django.shortcuts import render, redirect
-from django.contrib.auth.models import User
-from django.http import JsonResponse
 from django.contrib import messages
+
+User = get_user_model()
+
+from datetime import datetime
 
 def register_user(request):
     if request.method == "POST":
@@ -324,23 +327,42 @@ def register_user(request):
         password = request.POST['password']
         password2 = request.POST['password2']
         nickname = request.POST['nickname']
-        birth = request.POST.get('birth', '')
+        birth_raw = request.POST.get('birth', '')  # 생년월일은 문자열로 받음
         gender = request.POST.get('gender', '')
 
+        # 아이디 중복 검사
         if User.objects.filter(username=username).exists():
             messages.error(request, "아이디 중복 확인을 해주세요")
             return redirect('register_user')
 
+        # 비밀번호 일치 확인
         if password != password2:
             messages.error(request, "비밀번호가 일치하지 않습니다")
             return redirect('register_user')
 
+        # 유저 생성
         user = User.objects.create_user(username=username, password=password)
         user.first_name = nickname
+        user.gender = gender
+
+        # ✅ 생년월일은 선택 사항 (빈 값이면 저장 안 함)
+        if birth_raw:
+            try:
+                user.birth = datetime.strptime(birth_raw, "%Y%m%d").date()
+            except ValueError:
+                messages.error(request, "생년월일 형식이 올바르지 않습니다. (예: 19990101)")
+                return redirect('register_user')
+        else:
+            user.birth = None  # 입력 안 했으면 명시적으로 None
+
         user.save()
 
-        return redirect('home')  # 혹은 이전 페이지로 리다이렉트
+        messages.success(request, "회원가입이 완료되었습니다. 로그인 후 이용해주세요.")
+        return redirect('login')
+
     return render(request, 'register-user.html')
+
+
 
 
 def check_username(request):
@@ -375,18 +397,58 @@ def logout_view(request):
 
 from .forms import MyPageForm
 
+# accounts/views.py
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from datetime import datetime
+
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from datetime import datetime
+
 @login_required
-def mypage_view(request):
+def mypage(request):
     user = request.user
 
     if request.method == 'POST':
-        form = MyPageForm(request.POST, instance=user)
-        if form.is_valid():
-            form.save()
-            return redirect('mypage')  # 마이페이지로 리다이렉트
-    else:
-        form = MyPageForm(instance=user)
+        password = request.POST.get('password', '')
+        password2 = request.POST.get('password2', '')
+        nickname = request.POST.get('nickname', '')
+        birth_raw = request.POST.get('birth', '')  # 입력 이름 'birth'로 통일
+        gender = request.POST.get('gender', '')
 
-    return render(request, 'mypage.html', {
-        'form': form
-    })
+        # ✅ 닉네임 필수
+        if not nickname:
+            messages.error(request, "닉네임은 필수입니다.")
+            return redirect('mypage')
+
+        # ✅ 비밀번호 변경 시 입력값 확인
+        if password or password2:
+            if password != password2:
+                messages.error(request, "비밀번호가 일치하지 않습니다.")
+                return redirect('mypage')
+            else:
+                user.set_password(password)
+
+        # ✅ 생년월일 선택 사항 처리
+        if birth_raw:
+            try:
+                user.birth = datetime.strptime(birth_raw, "%Y%m%d").date()
+            except ValueError:
+                messages.error(request, "생년월일 형식이 올바르지 않습니다. (예: 19990101)")
+                return redirect('mypage')
+        else:
+            user.birth = None  # 입력 안 했으면 비움
+
+        # ✅ 나머지 필드 업데이트
+        user.nickname = nickname
+        user.gender = gender
+        user.save()
+
+        messages.success(request, "회원 정보가 수정되었습니다. 다시 로그인해주세요.")
+        return redirect('login')  # 비밀번호 변경 가능성이 있으므로 로그인 페이지로 리다이렉트
+
+    return render(request, 'mypage.html')
+
