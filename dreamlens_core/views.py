@@ -132,6 +132,9 @@ def dream_interpreter(request):
     # POST 요청 (해몽하기 버튼 눌렀을 시)
     elif request.method == "POST":
         dream = request.POST['input_text'].strip()
+
+        context['dream'] = dream
+
         if dream and faiss_index is not None:
             # 1. 사용자 꿈 임베딩 및 Faiss 검색
             query_vector = get_embedding(dream)
@@ -154,10 +157,10 @@ def dream_interpreter(request):
                 context['keywords_result'] = keywords_part.strip()
                 context['summary_result'] = summary_part.strip().replace('`', "")
 
-                print(classification_part.strip())
-                print(interpretation_part.strip())
-                print(keywords_part.strip())
-                print(summary_part.strip())
+                # print(classification_part.strip())
+                # print(interpretation_part.strip())
+                # print(keywords_part.strip())
+                # print(summary_part.strip())
 
             except ValueError:
                 # LLM이 형식에 맞지 않게 답변했을 경우를 대비한 예외 처리
