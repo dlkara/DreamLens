@@ -20,7 +20,7 @@
 
     {% if user.is_authenticated %}
     <p>안녕하세요!</p>
-    <h3>{{ user.username }} 님</h3>
+    <h3>{{ user.nickname|default:user.username }} 님</h3>
     <a href="{% url 'mypage' %}" class="btn">내 정보 수정</a>
     <a href="{% url 'logout' %}" class="btn">로그아웃</a>
     {% else %}

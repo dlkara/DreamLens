@@ -1,0 +1,80 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>꿈 일기</title>
+    <link rel="stylesheet" href="{% static 'css/common.css' %}">
+    <style>
+        /* 간단한 네비게이션 스타일 */
+        .calendar-nav {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 0.5em;
+            font-size: 1.2em;
+        }
+
+        .calendar-nav a {
+            text-decoration: none;
+            padding: 0 1em;
+            color: #333;
+        }
+
+        .calendar-nav span {
+            min-width: 8em;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    {% include 'header.html' %}
+
+    <section class="calendar-nav">
+        <a href="?year={{ prev_year }}&month={{ prev_month }}">◀</a>
+        <span>{{ year }}년 {{ month }}월</span>
+        <a href="?year={{ next_year }}&month={{ next_month }}">▶</a>
+    </section>
+
+    <table class="calendar">
+        <thead>
+        <tr>
+            <th>일</th>
+            <th>월</th>
+            <th>화</th>
+            <th>수</th>
+            <th>목</th>
+            <th>금</th>
+            <th>토</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for week in month_days %}
+        <tr>
+            {% for day in week %}
+            {% if day %}
+            <td class="
+              {% if day == today_day %} today{% endif %}
+              {% if day in good_days %} good
+              {% elif day in bad_days  %} bad
+              {% elif day in normal_days %} normal{% endif %}
+            ">
+                {{ day }}
+            </td>
+            {% else %}
+            <td class="empty"></td>
+            {% endif %}
+            {% endfor %}
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+
+    <a href="{% url 'dream_interpreter' %}" class="btn">해몽하러 가기</a>
+    <a href="{% url 'report' %}" class="btn">내 일기장 분석하기</a>
+
+    {% include 'footer.html' %}
+</body>
+</html>

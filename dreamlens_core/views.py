@@ -317,10 +317,68 @@ def dream_combiner(request):
 # 4. 꿈 일기장  TODO : 현정
 # ------------------------------
 
+import calendar
+from datetime import date, timedelta
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from .models import Diary
+
+@login_required
+def diary_list(request):
+    today = date.today()
+    year  = int(request.GET.get('year', today.year))
+    month = int(request.GET.get('month', today.month))
+
+    # 이번 달 1일, 그리고 이전달/다음달 계산
+    this_month_first = date(year, month, 1)
+    prev_month_last  = this_month_first - timedelta(days=1)
+    next_month_first = date(year, month, calendar.monthrange(year, month)[1]) + timedelta(days=1)
+
+    prev_year, prev_month = prev_month_last.year, prev_month_last.month
+    next_year, next_month = next_month_first.year, next_month_first.month
+
+    # 달력 데이터
+    cal = calendar.Calendar(firstweekday=6)
+    month_days = cal.monthdayscalendar(year, month)
+
+    # 일기 데이터
+    qs = Diary.objects.filter(
+        user=request.user,
+        date__year=year,
+        date__month=month
+    )
+    # 분류별 날짜 집합 (예시)
+    good_days   = {d.date.day for d in qs if getattr(d.dream_type, 'name','') == '길몽'}
+    bad_days    = {d.date.day for d in qs if getattr(d.dream_type, 'name','') == '흉몽'}
+    all_diary   = {d.date.day for d in qs}
+    normal_days = all_diary - good_days - bad_days
+
+    context = {
+        'year': year,
+        'month': month,
+        'prev_year': prev_year,
+        'prev_month': prev_month,
+        'next_year': next_year,
+        'next_month': next_month,
+        'month_days': month_days,
+        'today_day': (today.year == year and today.month == month) and today.day or 0,
+        'good_days': good_days,
+        'bad_days': bad_days,
+        'normal_days': normal_days,
+    }
+    return render(request, 'diary-list.html', context)
+
+
+def diary_detail(request):
+    render(request, 'diary-detail.html')
+
+
 
 # ------------------------------
 # 5. 분석 리포트 TODO : 지우
 # ------------------------------
+def report(request):
+    return render(request, "report.html")
 
 
 # ------------------------------
@@ -381,7 +439,6 @@ def logout_view(request):
 
 # 마이페이지
 from .forms import MyPageForm
-
 
 @login_required
 def mypage_view(request):

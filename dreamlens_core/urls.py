@@ -15,10 +15,11 @@ urlpatterns = [
     path('combine/', views.dream_combiner, name='dream_combiner'),
 
     # 꿈 일기장 -> TODO : 현정
-    # path('diary/', views.diary, name='diary'),
+    path('diary-list/', views.diary_list, name='diary_list'),
+    path('diary/<int:year>/<int:month>/<int:day>/', views.diary_detail, name='diary-detail'),
     
     # 분석 리포트 -> TODO : 지우
-    # path('report/', views.report, name='report'),
+    path('report/', views.report, name='report'),
 
     # 로그인/로그아웃, 회원가입
     path('login/', views.login_view, name='login'),
