@@ -12,7 +12,10 @@ urlpatterns = [
     path('combine/', views.dream_combiner, name='dream_combiner'),
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
-    path('register/', views.register_view, name='register'),
+    path('register/', views.register_user, name='register_user'),
+    path('check-username/', views.check_username, name='check_username'),
+
+
     path('mypage/', views.mypage_view, name='mypage'),
 
     path('interpret/', views.dream_interpreter, name='dream_interpreter'),

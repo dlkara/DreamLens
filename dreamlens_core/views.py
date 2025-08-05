@@ -312,34 +312,42 @@ def dream_combiner(request):
     return render(request, "combine.html", context)
 
 # 로그인, 회원가입 - 안주경
-def register_view(request):
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        password2 = request.POST.get('password2')
-        nickname = request.POST.get('nickname')
-        birth = request.POST.get('birth')
-        gender = request.POST.get('gender')
+# views.py
+from django.shortcuts import render, redirect
+from django.contrib.auth.models import User
+from django.http import JsonResponse
+from django.contrib import messages
 
-        if password != password2:
-            messages.error(request, '비밀번호가 일치하지 않습니다.')
-            return redirect('register')
+def register_user(request):
+    if request.method == "POST":
+        username = request.POST['username']
+        password = request.POST['password']
+        password2 = request.POST['password2']
+        nickname = request.POST['nickname']
+        birth = request.POST.get('birth', '')
+        gender = request.POST.get('gender', '')
 
         if User.objects.filter(username=username).exists():
-            messages.error(request, '이미 존재하는 아이디입니다.')
-            return redirect('register')
+            messages.error(request, "아이디 중복 확인을 해주세요")
+            return redirect('register_user')
 
-        user = User.objects.create_user(
-            username=username,
-            password=password,
-            nickname=nickname,
-            birth=birth,
-            gender=gender
-        )
+        if password != password2:
+            messages.error(request, "비밀번호가 일치하지 않습니다")
+            return redirect('register_user')
+
+        user = User.objects.create_user(username=username, password=password)
+        user.first_name = nickname
         user.save()
-        return redirect('login')
 
+        return redirect('home')  # 혹은 이전 페이지로 리다이렉트
     return render(request, 'register-user.html')
+
+
+def check_username(request):
+    username = request.GET.get('username', '')
+    exists = User.objects.filter(username=username).exists()
+    return JsonResponse({'exists': exists})
+
 
 
 

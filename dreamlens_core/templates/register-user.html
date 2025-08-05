@@ -1,15 +1,60 @@
-<form method="POST">
+<!-- templates/register-user.html -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>일반 회원가입</title>
+</head>
+<body>
+  <h2>일반 회원가입</h2>
+
+  <form method="POST" action="{% url 'register_user' %}">
     {% csrf_token %}
-    <label>아이디:</label><input type="text" name="username"><br>
-    <label>비밀번호:</label><input type="password" name="password"><br>
-    <label>비밀번호 확인:</label><input type="password" name="password2"><br>
-    <label>닉네임:</label><input type="text" name="nickname"><br>
-    <label>생년월일:</label><input type="date" name="birth"><br>
-    <label>성별:</label>
+
+    <!-- 아이디 입력 -->
+    <input type="text" name="username" placeholder="아이디 * (4자 이상)" required>
+    <button type="button" onclick="checkDuplicate()">아이디 중복 확인</button>
+    <p id="id-check-msg" style="color:red;">아이디 중복 확인을 진행해주세요</p>
+
+    <!-- 비밀번호 -->
+    <input type="password" name="password" placeholder="비밀번호 *" required>
+    <input type="password" name="password2" placeholder="비밀번호 확인 *" required>
+
+    <!-- 닉네임 -->
+    <input type="text" name="nickname" placeholder="닉네임 *" required>
+
+    <!-- 생년월일 -->
+    <input type="text" name="birth" placeholder="생년월일 (8자리)">
+
+    <!-- 성별 -->
+    <button type="button">성별</button>
     <select name="gender">
-        <option value="">선택</option>
-        <option value="남자">남자</option>
-        <option value="여자">여자</option>
-    </select><br>
+      <option value="">선택 안 함 (default)</option>
+      <option value="남자">남자</option>
+      <option value="여자">여자</option>
+      <option value="기타">기타</option>
+    </select>
+
+    <br>
     <button type="submit">회원가입</button>
-</form>
+  </form>
+
+  <script>
+    function checkDuplicate() {
+      const username = document.querySelector('input[name="username"]').value;
+      fetch(`/check-username/?username=${username}`)
+        .then(res => res.json())
+        .then(data => {
+          const msgTag = document.getElementById('id-check-msg');
+          if (data.exists) {
+            msgTag.style.color = 'red';
+            msgTag.innerText = '다른 아이디를 입력해주세요';
+          } else {
+            msgTag.style.color = 'blue';
+            msgTag.innerText = '해당 아이디로 가입합니다';
+          }
+        });
+    }
+  </script>
+</body>
+</html>
