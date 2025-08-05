@@ -14,8 +14,10 @@ urlpatterns = [
     # 꿈 조합기
     path('combine/', views.dream_combiner, name='dream_combiner'),
 
-    # 꿈 일기장 -> TODO : 현정
-    path('diary-list/', views.diary_list, name='diary_list'),
+    # 꿈 일기장 -> TODO : 현정, 지우
+    path('diary-list/', views.diary_list, name='diary_list'),\
+    # 꿈 일기장 작성
+    path('diary-write/', views.diary_write, name='diary_write'),
     path('diary/<int:year>-<int:month>-<int:day>/', views.diary_detail, name='diary-detail'),
     
     # 분석 리포트 -> TODO : 지우

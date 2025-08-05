@@ -123,7 +123,7 @@
             <div>
                 <div>
                 <!-- 일기장에 추가하는 버튼 -->
-                <form action="{% url 'diary' %}" method="POST" class="mb-0">
+                <form action="{% url 'diary_write' %}" method="POST" class="mb-0">
                     {% csrf_token %}
                     <input type="hidden" name="dream_content" value="{{ original_dream }}">
                     <input type="hidden" name="interpretation_result" value="{{ interpretation_result }}">
