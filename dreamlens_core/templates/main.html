@@ -14,14 +14,32 @@
         <h1>꿈의 조각을 맞춰보세요!</h1>
 
         <div>
-            <a href="/interpret/" class="btn big">🔮 해몽하러 가기</a>
-            <br>
-            <a href="/dict/" class="btn big">📘 꿈 사전 보기</a>
+            <a href="/interpret/" class="btn big">🔮 해몽하러 가기</a><br>
+            <a href="/dict/" class="btn big">📘 꿈 사전 보기</a><br>
+
+            <!-- ✅ 보호된 페이지: 내 일기장 -->
+            <button class="btn big" onclick="goToProtectedPage('/diary/')">📔 내 일기장</button><br>
+
+            <!-- ✅ 보호된 페이지: 분석 리포트 -->
+            <button class="btn big" onclick="goToProtectedPage('/report/')">📊 분석 리포트</button>
         </div>
     </main>
 
     {% include "footer.html" %}
 
     <script src="{% static 'js/header.js' %}"></script>
+
+    <!-- ✅ 로그인 상태 확인 및 페이지 보호용 스크립트 -->
+    <script>
+        function goToProtectedPage(targetUrl) {
+            const isLoggedIn = "{{ user.is_authenticated|yesno:'true,false' }}" === "true";
+            if (isLoggedIn) {
+                window.location.href = targetUrl;
+            } else {
+                alert("로그인이 필요한 서비스입니다.");
+                window.location.href = "/login/";
+            }
+        }
+    </script>
 </body>
 </html>

@@ -18,7 +18,7 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
         .spinner-container {
-            display: none; /* Initially hidden */
+            display: none;
             position: fixed;
             top: 0;
             left: 0;
@@ -30,7 +30,7 @@
             align-items: center;
         }
         .result-section {
-            white-space: pre-wrap; /* Preserve line breaks from AI response */
+            white-space: pre-wrap;
         }
     </style>
 </head>
@@ -67,10 +67,8 @@
             </div>
         </div>
 
-        <!-- 해몽 결과 표시 영역 -->
         {% if interpretation_result %}
         <div class="mt-5">
-            <!-- 1. 꿈 종류 분석 -->
             {% if classification_result %}
             <div class="card mb-4">
                 <div class="card-header fs-5">📊 AI가 분석한 나의 꿈 종류</div>
@@ -80,7 +78,6 @@
             </div>
             {% endif %}
 
-            <!-- 2. 상세 해몽 -->
             <div class="card mb-4">
                 <div class="card-header fs-5">🌙 AI가 들려주는 나의 꿈 이야기</div>
                 <div class="card-body result-section">
@@ -88,7 +85,6 @@
                 </div>
             </div>
 
-            <!-- 3. 핵심 키워드 -->
             {% if keywords_result %}
             <div class="card mb-4">
                 <div class="card-header fs-5">🔑 꿈의 핵심 키워드</div>
@@ -98,7 +94,6 @@
             </div>
             {% endif %}
 
-            <!-- 4. 세 줄 요약 -->
             {% if summary_result %}
             <div class="card mb-4">
                 <div class="card-header fs-5">✨ 세 줄 요약</div>
@@ -108,11 +103,14 @@
             </div>
             {% endif %}
 
-            <!-- 여기에 '일기장에 추가하기', '공유하기' 버튼 등을 추가할 수 있습니다. -->
+            <!-- ✅ 내 일기장에 추가하기 / 해몽 공유하기 버튼 -->
+            <div class="d-flex justify-content-end gap-2 mt-3">
+                <button class="btn btn-outline-secondary" onclick="addToDiary()">📔 내 일기장에 추가하기</button>
+                <button class="btn btn-outline-info" onclick="copyInterpretation()">📋 해몽 공유하기</button>
+            </div>
         </div>
         {% endif %}
 
-        <!-- 오류 메시지 표시 영역 -->
         {% if error %}
         <div class="alert alert-danger mt-4" role="alert">
             {{ error }}
@@ -123,10 +121,35 @@
     {% include 'footer.html' %}
 
     <script>
-        // 폼 제출 시 로딩 스피너를 표시하는 스크립트
-        document.getElementById('dreamForm').addEventListener('submit', function() {
+        // 폼 제출 시 로딩 스피너 표시
+        document.getElementById('dreamForm').addEventListener('submit', function () {
             document.getElementById('loadingSpinner').style.display = 'flex';
         });
+
+        // ✅ 로그인 여부 판단 후 일기장 추가 기능
+        function addToDiary() {
+            const isLoggedIn = "{{ user.is_authenticated|yesno:'true,false' }}" === "true";
+            if (!isLoggedIn) {
+                alert("로그인이 필요한 기능입니다.");
+                window.location.href = "/login/";
+                return;
+            }
+
+            // 여기에 일기장에 저장하는 Ajax 로직 또는 form 전송 코드 삽입 예정
+            alert("일기장에 추가되었습니다! (예시 메시지)");
+        }
+
+        // ✅ 해몽 복사 기능
+        function copyInterpretation() {
+            const interpretation = `{{ interpretation_result|escapejs }}`;
+            if (interpretation) {
+                navigator.clipboard.writeText(interpretation).then(() => {
+                    alert("해몽 결과가 클립보드에 복사되었습니다!");
+                });
+            } else {
+                alert("복사할 해몽 결과가 없습니다.");
+            }
+        }
     </script>
 </body>
 </html>
