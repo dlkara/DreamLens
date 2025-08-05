@@ -1,3 +1,5 @@
+{% include 'header.html' %}
+
 <form method="post">
   {% csrf_token %}
   <input type="text" name="username" placeholder="아이디">
@@ -12,3 +14,5 @@
     </p>
   {% endfor %}
 {% endif %}
+
+{% include 'footer.html' %}

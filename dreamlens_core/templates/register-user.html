@@ -9,6 +9,9 @@
   <h2>일반 회원가입</h2>
 
   <form method="POST" action="{% url 'register_user' %}">
+{% include 'header.html' %}
+
+<form method="POST">
     {% csrf_token %}
 
     <!-- 아이디 입력 -->
@@ -57,3 +60,5 @@
   </script>
 </body>
 </html>
+
+{% include 'footer.html' %}

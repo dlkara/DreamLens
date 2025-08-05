@@ -1,4 +1,7 @@
+
+
 {% load static %}
+
 <link rel="stylesheet" href="{% static 'css/header.css' %}">
 
 <!-- 상단 로고 -->
@@ -14,17 +17,26 @@
     <div style="text-align:right;">
         <button id="closePanelBtn">❌</button>
     </div>
+
+    {% if user.is_authenticated %}
+    <p>안녕하세요!</p>
+    <h3>{{ user.nickname|default:user.username }} 님</h3>
+    <a href="{% url 'mypage' %}" class="btn">내 정보 수정</a>
+    <a href="{% url 'logout' %}" class="btn">로그아웃</a>
+    {% else %}
     <p>만나서 반갑습니다!</p>
     <a href="{% url 'login' %}" class="btn">로그인</a>
     <a href="{% url 'register_user' %}" class="btn">회원가입</a>
+    <a href="{% url 'register' %}" class="btn">회원가입</a>
+    {% endif %}
 
 
     <hr>
     <a href="{% url 'dream_interpreter' %}" class="btn">🔮 해몽하기</a>
     <a href="{% url 'dream_dict' %}" class="btn">📖 꿈 사전</a>
     <a href="{% url 'dream_combiner' %}" class="btn">🧩 꿈 조합기</a>
-    <a href="#" class="btn">📘 내 일기장</a>
-    <a href="#" class="btn">📊 분석 리포트</a>
+    <a href="{% url 'diary_list' %}" class="btn">📘 내 일기장</a>
+    <a href="{% url 'report' %}" class="btn">📊 분석 리포트</a>
 </div>
 
 <script src="{% static 'js/header.js' %}"></script>

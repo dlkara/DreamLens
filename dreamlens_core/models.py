@@ -96,3 +96,89 @@ class Interpretation(models.Model):
 
     def __str__(self):
         return f"🟦 {self.user.username}님의 해몽 요청 (ID: {self.id})"
+
+
+from django.utils import timezone
+
+class Emotion(models.Model):
+    """
+    꿈을 꿀 때 느낀 감정(기쁨, 슬픔, 두려움 등)을 저장하는 모델
+    """
+    name = models.CharField(max_length=50, unique=True, verbose_name="감정")
+
+    class Meta:
+        verbose_name = "감정"
+        verbose_name_plural = "감정 목록"
+
+    def __str__(self):
+        return self.name
+
+
+class DreamType(models.Model):
+    """
+    꿈의 유형(예: 비행, 추락, 추격 등)을 저장하는 모델
+    """
+    name = models.CharField(max_length=50, unique=True, verbose_name="꿈 유형")
+
+    class Meta:
+        verbose_name = "꿈 유형"
+        verbose_name_plural = "꿈 유형 목록"
+
+    def __str__(self):
+        return self.name
+
+
+class Diary(models.Model):
+    """
+    사용자가 기록한 꿈 일기
+    """
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="diaries",
+        verbose_name="작성자"
+    )
+    interpretation = models.ForeignKey(
+        Interpretation,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="diary_entries",
+        verbose_name="해몽"
+    )
+    emotion = models.ForeignKey(
+        Emotion,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="diaries",
+        verbose_name="감정"
+    )
+    dream_type = models.ForeignKey(
+        DreamType,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="diaries",
+        verbose_name="꿈 유형"
+    )
+    date = models.DateTimeField(
+        default=timezone.now,
+        verbose_name="꿈꾼 날짜"
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="등록 시각"
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name="수정 시각"
+    )
+
+    class Meta:
+        verbose_name = "꿈 일기"
+        verbose_name_plural = "꿈 일기 목록"
+        ordering = ['-date']
+
+    def __str__(self):
+        return f"{self.user.username}님의 꿈 일기 ({self.date:%Y-%m-%d %H:%M})"

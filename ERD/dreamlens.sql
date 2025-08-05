@@ -17,19 +17,6 @@ CREATE TABLE Diary
     PRIMARY KEY (id)
 ) COMMENT '꿈 일기장';
 
-CREATE TABLE DreamDict
-(
-    id       INT     NOT NULL AUTO_INCREMENT,
-    category VARCHAR(100) NOT NULL COMMENT '대분류',
-    sub_category VARCHAR(100) NOT NULL COMMENT '소분류 키워드',
-    meaning  TEXT    NOT NULL COMMENT '상징적 의미',
-    PRIMARY KEY (id)
-) COMMENT '꿈 사전';
-
--- 삭제.
--- ALTER TABLE DreamDict
---     ADD CONSTRAINT UQ_keyword UNIQUE (keyword);
-
 CREATE TABLE DreamType
 (
     id   INT NOT NULL AUTO_INCREMENT,
