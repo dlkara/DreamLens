@@ -15,7 +15,8 @@ urlpatterns = [
     path('combine/', views.dream_combiner, name='dream_combiner'),
 
     # 꿈 일기장 -> TODO : 현정, 지우
-    path('diary-list/', views.diary_list, name='diary_list'),\
+    path('diary-list/', views.diary_list, name='diary_list_base'),  # 기본 진입: today 리다이렉트
+    path('diary-list/<int:yyyymm>', views.diary_list, name='diary_list'),
     # 꿈 일기장 작성
     path('diary-write/', views.diary_write, name='diary_write'),
     path('diary/<int:year>-<int:month>-<int:day>/', views.diary_detail, name='diary-detail'),

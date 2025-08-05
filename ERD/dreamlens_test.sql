@@ -23,5 +23,5 @@ VALUES (1, '꿈 속의 꿈', '불안하신 듯', '꿈, 반복', '불안함', '20
 
 
 INSERT INTO dreamlens_core_diary(user_id, interpretation_id, emotion_id, dream_type_id, date)
-VALUES (1, 1, 5, 2, '2025-08-04')
+VALUES (4, 1, 5, 2, '2025-08-04')
 ;

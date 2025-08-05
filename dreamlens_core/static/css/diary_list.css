@@ -1,0 +1,66 @@
+.calendar-nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 1em 0;
+    font-size: 1.2em;
+}
+
+.calendar-nav a {
+    text-decoration: none;
+    padding: 0 1em;
+    font-weight: bold;
+}
+
+.calendar-nav span {
+    min-width: 8em;
+    text-align: center;
+}
+
+.calendar {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+}
+
+.calendar th,
+.calendar td {
+    width: 14.28%;
+    padding: 0.5em;
+    border: 1px solid #ddd;
+}
+
+.calendar td.empty {
+    background: #f9f9f9;
+    cursor: default;
+}
+
+/* 🔽 수정된 부분: font-weight와 text-decoration 추가 */
+.calendar td.today {
+    background: #fff9c4;
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+/* 길몽 (초록색 배경) */
+.calendar td.good {
+    background: #c8e6c9;
+}
+
+/* 흉몽 (빨간색 배경) */
+.calendar td.bad {
+    background: #ffcdd2;
+}
+
+/* 일반꿈 (회색 배경) */
+.calendar td.normal {
+    background: #e0e0e0;
+}
+
+.calendar td a {
+    display: block;
+    width: 100%;
+    height: 100%;
+    color: inherit;
+    text-decoration: none;
+}
