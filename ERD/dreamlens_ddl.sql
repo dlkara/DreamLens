@@ -1,4 +1,5 @@
-# CREATE DATABASE dreamlens_db;
+DROP DATABASE dreamlens_db;
+CREATE DATABASE dreamlens_db;
 
 DROP TABLE IF EXISTS Diary;
 DROP TABLE IF EXISTS DreamDict;
