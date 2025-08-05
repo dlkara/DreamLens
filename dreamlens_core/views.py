@@ -318,7 +318,7 @@ def dream_combiner(request):
 
 
 # ------------------------------
-# 4. 꿈 일기장  TODO : 현정
+# 4. 꿈 일기장  TODO : 현정, 지우
 # ------------------------------
 
 import calendar
@@ -376,7 +376,8 @@ def diary_list(request):
 def diary_detail(request, year, month, day):
     render(request, 'diary-detail.html')
 
-
+def diary_write(request):
+    return render(request, 'diary-write.html')
 
 # ------------------------------
 # 5. 분석 리포트 TODO : 지우
