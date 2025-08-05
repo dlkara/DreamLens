@@ -23,10 +23,9 @@ urlpatterns = [
     # 로그인/로그아웃, 회원가입
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
-    path('register/', views.register_view, name='register'),
+    path('register/', views.register_view, name='register_user'),
 
     # 마이페이지
-    path('mypage/', views.mypage_view, name='mypage'),
     path('check-username/', views.check_username, name='check_username'),
 
     path('mypage/', views.mypage, name='mypage'),

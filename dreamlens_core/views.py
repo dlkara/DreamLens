@@ -328,15 +328,6 @@ def dream_combiner(request):
 # 6. 로그인/회원가입/마이페이지
 # ------------------------------
 
-# 회원가입
-def register_view(request):
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        password2 = request.POST.get('password2')
-        nickname = request.POST.get('nickname')
-        birth = request.POST.get('birth')
-        gender = request.POST.get('gender')
 # 로그인, 회원가입 - 안주경
 from django.contrib.auth import get_user_model
 from django.shortcuts import render, redirect
@@ -345,41 +336,39 @@ from django.contrib import messages
 User = get_user_model()
 
 from datetime import datetime
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from django.http import JsonResponse
 
-def register_user(request):
+
+def register_view(request):
     if request.method == "POST":
         username = request.POST['username']
         password = request.POST['password']
         password2 = request.POST['password2']
         nickname = request.POST['nickname']
-        birth_raw = request.POST.get('birth', '')  # 생년월일은 문자열로 받음
+        birth = request.POST.get('birth', '')
         gender = request.POST.get('gender', '')
 
-        # 아이디 중복 검사
         if User.objects.filter(username=username).exists():
             messages.error(request, "아이디 중복 확인을 해주세요")
             return redirect('register_user')
 
-        # 비밀번호 일치 확인
         if password != password2:
             messages.error(request, "비밀번호가 일치하지 않습니다")
             return redirect('register_user')
 
-        # 유저 생성
+        # ✅ 닉네임을 별도로 저장
         user = User.objects.create_user(username=username, password=password)
-        user.first_name = nickname
-        user.gender = gender
-
-        # ✅ 생년월일은 선택 사항 (빈 값이면 저장 안 함)
-        if birth_raw:
+        user.nickname = nickname  # ✅ 여기 중요!!
+        if birth:
             try:
-                user.birth = datetime.strptime(birth_raw, "%Y%m%d").date()
+                user.birth = datetime.strptime(birth, "%Y%m%d").date()
             except ValueError:
-                messages.error(request, "생년월일 형식이 올바르지 않습니다. (예: 19990101)")
+                messages.error(request, "생년월일 형식이 올바르지 않습니다 (예: 20000101)")
                 return redirect('register_user')
-        else:
-            user.birth = None  # 입력 안 했으면 명시적으로 None
-
+        if gender:
+            user.gender = gender
         user.save()
 
         messages.success(request, "회원가입이 완료되었습니다. 로그인 후 이용해주세요.")
@@ -388,12 +377,11 @@ def register_user(request):
     return render(request, 'register-user.html')
 
 
-
-
 def check_username(request):
     username = request.GET.get('username', '')
     exists = User.objects.filter(username=username).exists()
     return JsonResponse({'exists': exists})
+
 
 
 
