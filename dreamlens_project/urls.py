@@ -19,5 +19,5 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('dreamlens_core.urls')),   # 앱 연결
+    path('', include('dreamlens_core.urls')),
 ]

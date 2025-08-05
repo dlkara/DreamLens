@@ -98,12 +98,17 @@ class Interpretation(models.Model):
         return f"🟦 {self.user.username}님의 해몽 요청 (ID: {self.id})"
 
 
+
+# ----------------------------------------------------------------
+# Emotion 모델
+# ----------------------------------------------------------------
 from django.utils import timezone
 
 class Emotion(models.Model):
     """
     꿈을 꿀 때 느낀 감정(기쁨, 슬픔, 두려움 등)을 저장하는 모델
     """
+    icon = models.CharField(max_length=50, unique=True, verbose_name="이모티콘")
     name = models.CharField(max_length=50, unique=True, verbose_name="감정")
 
     class Meta:
@@ -114,20 +119,26 @@ class Emotion(models.Model):
         return self.name
 
 
+# ----------------------------------------------------------------
+# DreamType 모델
+# ----------------------------------------------------------------
 class DreamType(models.Model):
     """
     꿈의 유형(예: 비행, 추락, 추격 등)을 저장하는 모델
     """
-    name = models.CharField(max_length=50, unique=True, verbose_name="꿈 유형")
+    type = models.CharField(max_length=50, unique=True, verbose_name="꿈 유형")
 
     class Meta:
         verbose_name = "꿈 유형"
         verbose_name_plural = "꿈 유형 목록"
 
     def __str__(self):
-        return self.name
+        return self.type
 
 
+# ----------------------------------------------------------------
+# Diary 모델
+# ----------------------------------------------------------------
 class Diary(models.Model):
     """
     사용자가 기록한 꿈 일기
@@ -165,14 +176,6 @@ class Diary(models.Model):
     date = models.DateTimeField(
         default=timezone.now,
         verbose_name="꿈꾼 날짜"
-    )
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name="등록 시각"
-    )
-    updated_at = models.DateTimeField(
-        auto_now=True,
-        verbose_name="수정 시각"
     )
 
     class Meta:

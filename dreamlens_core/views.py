@@ -373,7 +373,7 @@ def diary_list(request):
     return render(request, 'diary-list.html', context)
 
 
-def diary_detail(request):
+def diary_detail(request, year, month, day):
     render(request, 'diary-detail.html')
 
 
