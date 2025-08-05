@@ -7,12 +7,14 @@
   <button type="submit">로그인하기</button>
 </form>
 
+{<!-- ✅ 메시지 구분 출력 -->
 {% if messages %}
   {% for message in messages %}
-    <p style="{% if message.tags == 'success' %}color:green;{% else %}color:red;{% endif %}">
-      {{ message }}
-    </p>
+    {% if 'signup' in message.extra_tags %}
+      <p style="color:green;">{{ message }}</p>
+    {% elif message.tags == 'error' %}
+      <p style="color:red;">{{ message }}</p>
+    {% endif %}
   {% endfor %}
 {% endif %}
-
 {% include 'footer.html' %}

@@ -21,7 +21,7 @@
     <input type="text" name="nickname" value="{{ user.nickname }}" required>
 
     <!-- 생년월일 -->
-    <input type="text" name="birth" value="{{ user.birth|date:'Ymd' }}" placeholder="생년월일 (8자리)">
+    <input type="date" name="birth" value="{{ user.birth|date:'Ymd' }}" placeholder="생년월일 (8자리)">
 
     <!-- 성별 -->
     <select name="gender">

@@ -421,18 +421,19 @@ def register_view(request):
 
         # ✅ 닉네임을 별도로 저장
         user = User.objects.create_user(username=username, password=password)
-        user.nickname = nickname  # ✅ 여기 중요!!
+        user.nickname = nickname
         if birth:
             try:
-                user.birth = datetime.strptime(birth, "%Y%m%d").date()
+                user.birth = datetime.strptime(birth, "%Y-%m-%d").date()  # 수정됨!
             except ValueError:
-                messages.error(request, "생년월일 형식이 올바르지 않습니다 (예: 20000101)")
+                messages.error(request, "생년월일 형식이 올바르지 않습니다 (예: 2000-01-01)")
                 return redirect('register_user')
+
         if gender:
             user.gender = gender
         user.save()
 
-        messages.success(request, "회원가입이 완료되었습니다. 로그인 후 이용해주세요.")
+        messages.success(request, "회원가입이 완료되었습니다. 로그인 후 이용해주세요.", extra_tags='signup')
         return redirect('login')
 
     return render(request, 'register-user.html')
@@ -509,10 +510,11 @@ def mypage(request):
         # ✅ 생년월일 선택 사항 처리
         if birth_raw:
             try:
-                user.birth = datetime.strptime(birth_raw, "%Y%m%d").date()
+                user.birth = datetime.strptime(birth_raw, "%Y-%m-%d").date()
             except ValueError:
-                messages.error(request, "생년월일 형식이 올바르지 않습니다. (예: 19990101)")
+                messages.error(request, "생년월일 형식이 올바르지 않습니다. (예: 1999-01-01)")
                 return redirect('mypage')
+
         else:
             user.birth = None  # 입력 안 했으면 비움
 
