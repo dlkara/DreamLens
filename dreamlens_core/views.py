@@ -61,11 +61,7 @@ except Exception as e:
     print(f"⚠️ 경고: 데이터 로딩 중 오류 발생 ({e}). 해몽 기능이 정상 작동하지 않을 수 있습니다.")
 
 
-# ------------------------------
-# 꿈 해몽 LLM
-# AI 로직 함수
-# ------------------------------
-
+# 꿈 해몽 LLM - AI 로직 함수
 def get_embedding(text, model="text-embedding-3-small"):
     """사용자 텍스트를 OpenAI 임베딩으로 변환하는 함수"""
     response = openai.embeddings.create(input=[text], model=model)
@@ -228,7 +224,6 @@ def dream_dict_view(request):
 # ------------------------------
 # 3. 꿈 조합기
 # ------------------------------
-
 def generate_interpretation(keywords):
     keyword_text = ", ".join(keywords)
 
@@ -311,7 +306,26 @@ def dream_combiner(request):
 
     return render(request, "combine.html", context)
 
-# 로그인, 회원가입 - 안주경
+
+# ------------------------------
+# 4. 꿈 일기장  TODO : 현정
+# ------------------------------
+
+
+
+
+# ------------------------------
+# 5. 분석 리포트 TODO : 지우
+# ------------------------------
+
+
+
+
+# ------------------------------
+# 6. 로그인/회원가입/마이페이지
+# ------------------------------
+
+# 회원가입
 def register_view(request):
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -342,7 +356,7 @@ def register_view(request):
     return render(request, 'register-user.html')
 
 
-
+# 로그인
 def login_view(request):
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -362,9 +376,8 @@ def logout_view(request):
     logout(request)
     return redirect('/')
 
+
 # 마이페이지
-
-
 from .forms import MyPageForm
 
 @login_required
