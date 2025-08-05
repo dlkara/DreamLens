@@ -5,55 +5,83 @@
 <head>
     <meta charset="UTF-8">
     <title>꿈 사전</title>
+    <link rel="stylesheet" href="{% static 'css/common.css' %}">
+    <link rel="stylesheet" href="{% static 'css/header.css' %}">
 </head>
 <body>
-    {% include "header.html" %}
+    {% include 'header.html' %}
 
-    <h2>꿈 사전</h2>
+    <h1>꿈 사전</h1>
 
-    <form method="get">
-        <label for="category">대분류:</label>
-        <select name="category" id="category" onchange="this.form.submit()">
-            <option value="">-- 선택하기 --</option>
-            {% for category in categories %}
-            <option value="{{ category }}" {% if category == selected_category %}selected{% endif %}>
-                {{ category }}
-            </option>
-            {% endfor %}
-        </select>
-        <br>
+    <form id="dict-form" method="get">
+        <label>대분류:
+            <select name="category" id="category">
+                <option value="">--선택--</option>
+                {% for cat in categories %}
+                <option value="{{ cat }}"
+                        {% if cat == sel_cat %}selected{% endif %}>
+                    {{ cat }}
+                </option>
+                {% endfor %}
+            </select>
+        </label>
 
-        {% if keywords %}
-        <label for="keyword">키워드:</label>
-        <select name="keyword" id="keyword" onchange="this.form.submit()">
-            <option value="">-- 전체 보기 --</option>
-            {% for kw in keywords %}
-            <option value="{{ kw }}" {% if kw == selected_keyword %}selected{% endif %}>{{ kw }}</option>
-            {% endfor %}
-        </select>
-        {% endif %}
+        <label>소분류:
+            <select name="subcategory" id="subcategory" {% if not sel_cat %}disabled{% endif %}>
+                <option value="">--선택--</option>
+                {# sub_list 로만 렌더, dict 스타일 브래킷 없이 #}
+                {% for entry in sub_list %}
+                {% if entry.cat == sel_cat %}
+                <option value="{{ entry.sub }}"
+                        {% if entry.sub == sel_sub %}selected{% endif %}>
+                    {{ entry.sub }}
+                </option>
+                {% endif %}
+                {% endfor %}
+            </select>
+        </label>
     </form>
 
-    {% if sub_items %}
-    <h3>{{ selected_category }}{% if selected_keyword %} > {{selected_keyword}}{% endif %} 관련 해몽</h3>
-    <table>
-        <tr>
-            <th>꿈</th>
-            <th>의미</th>
-        </tr>
-        {% for item in sub_items %}
-        <tr>
-            <td>{{ item.dream }}</td>
-            <td>{{ item.interpret }}</td>
-        </tr>
-        {% endfor %}
-    </table>
-    {% elif selected_category %}
-    <p><strong>해당 카테고리에 등록된 해몽 정보가 없습니다.</strong></p>
+    {# 결과 개수 #}
+    {% if sel_cat and sel_sub %}
+    <p id="result-count">{{ filtered|length }}개 결과</p>
     {% endif %}
 
+   <table id="result-table">
+       <thead>
+       <tr>
+           <th>꿈</th>
+           <th>해몽</th>
+       </tr>
+       </thead>
+       <tbody>
+       {% if filtered %}
+       {# 필터된 결과가 있을 때 #}
+       {% for item in filtered %}
+       <tr>
+           <td>{{ item.꿈 }}</td>
+           <td>{{ item.해몽 }}</td>
+       </tr>
+       {% endfor %}
+       {% else %}
+           {# 필터된 결과가 없을 때 #}
+           {% if not sel_cat or not sel_sub %}
+           {# 대분류 혹은 소분류가 비어 있으면 #}
+           <tr>
+               <td colspan="2">대분류와 소분류를 선택해주세요.</td>
+           </tr>
+           {% else %}
+           {# 둘 다 선택했는데 결과가 없으면 #}
+           <tr>
+               <td colspan="2">조건에 맞는 항목이 없습니다.</td>
+           </tr>
+           {% endif %}
+       {% endif %}
+       </tbody>
+   </table>
+
+    {% include 'footer.html' %}
+
+    <script src="{% static 'js/dict.js' %}"></script>
 </body>
-
-<script src="{% static 'js/dict.js' %}"></script>
-
 </html>
