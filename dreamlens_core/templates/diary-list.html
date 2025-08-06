@@ -23,51 +23,56 @@
 <body>
     {% include 'header.html' %}
 
-    <section class="calendar-nav">
-        <a href="{% url 'diary_list' prev_yyyymm %}">◀</a>
-        <span>{{ year }}년 {{ month }}월</span>
-        <a href="{% url 'diary_list' next_yyyymm %}">▶</a>
-    </section>
+    <main class="diary-main">
+        <section class="calendar-nav">
+            <a href="{% url 'diary_list' prev_yyyymm %}">◀</a>
+            <span>{{ year }}년 {{ month }}월</span>
+            <a href="{% url 'diary_list' next_yyyymm %}">▶</a>
+        </section>
 
-    <table class="calendar">
-        <thead>
-        <tr>
-            <th>일</th>
-            <th>월</th>
-            <th>화</th>
-            <th>수</th>
-            <th>목</th>
-            <th>금</th>
-            <th>토</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for week in month_days %}
-        <tr>
-            {% for cell in week %}
-            {% if cell.day %}
-            <td class="{% if cell.day == today_day %} today {% endif %}
-                       {% if cell.is_good %} good
-                       {% elif cell.is_bad %} bad
-                       {% elif cell.is_normal %} normal
-                       {% endif %}"
-                data-day="{{ cell.day }}">
-                <span>{{ cell.day }}</span>
-            </td>
-            {% else %}
-            <td class="empty"></td>
-            {% endif %}
-            {% endfor %}
-        </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+        <div class="calendar-wrapper">
+            <table class="calendar">
+                <thead>
+                    <tr>
+                        <th>일</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th><th>토</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for week in month_days %}
+                    <tr>
+                        {% for cell in week %}
+                        {% if cell.day %}
+                        <td class="{% if cell.day == today_day %} today {% endif %}
+                                   {% if cell.is_good %} good
+                                   {% elif cell.is_bad %} bad
+                                   {% elif cell.is_normal %} normal
+                                   {% endif %}" data-day="{{ cell.day }}">
+                            <span>{{ cell.day }}</span>
+                        </td>
+                        {% else %}
+                        <td class="empty"></td>
+                        {% endif %}
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
-    <a class="btn" href="{% url 'dream_interpreter' %}">해몽하러 가기</a>
-    <a class="btn" href="{% url 'report' %}">내 일기장 분석하기</a>
-
+        <div class="btn-group">
+            <a class="btn" href="{% url 'dream_interpreter' %}">해몽하러 가기</a>
+            <a class="btn" href="{% url 'report' %}">내 일기장 분석하기</a>
+        </div>
+    </main>
+    <!-- 📌 일기 팝업 모달 -->
+    <div id="diary-popup" class="diary-popup hidden">
+        <div class="popup-content">
+            <button class="popup-close" aria-label="닫기">&times;</button>
+            <h2 class="popup-title">📝 <span id="popup-date"></span>의 일기</h2>
+            <p class="popup-body" id="popup-text">여기에 일기 내용이 표시됩니다.</p>
+        </div>
+    </div>
     {% include 'footer.html' %}
-
-    <script src="{% static 'js/header.js' %}"></script>
 </body>
+
 </html>

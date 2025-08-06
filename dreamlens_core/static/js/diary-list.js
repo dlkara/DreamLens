@@ -1,59 +1,65 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // 1) 날짜별 일기 데이터를 JSON으로 파싱
     const entriesByDay = JSON.parse(
         document.getElementById('entriesByDayData').textContent
     );
 
-    // 2) 상세보기 URL 템플릿 (".../diary/detail/0/") 에서 pk=0 부분을 교체해서 사용
-    const urlTemplate = window.diaryDetailUrlTemplate;
+    // 팝업 요소 생성
+    const popup = document.createElement('div');
+    popup.id = 'diary-popup';
+    popup.className = 'diary-popup hidden';
+    popup.innerHTML = `
+        <div class="popup-content">
+            <button class="popup-close" aria-label="닫기">&times;</button>
+            <h2 class="popup-title"><span id="popup-date"></span>의 일기장</h2>
+            <ul class="popup-list" id="popup-list"></ul>
+        </div>
+    `;
+    document.body.appendChild(popup);
 
-    // 3) 모달 구조 생성 및 이벤트 바인딩
-    const modal = document.createElement('div');
-    modal.id = 'diaryModal';
-    modal.className = 'modal';
-    modal.innerHTML = `
-    <div class="modal-content">
-      <span class="modal-close">&times;</span>
-      <ul id="diaryEntriesList"></ul>
-    </div>
-  `;
-    document.body.appendChild(modal);
+    const popupDate = popup.querySelector('#popup-date');
+    const popupList = popup.querySelector('#popup-list');
+    const popupClose = popup.querySelector('.popup-close');
 
-    const entryList = modal.querySelector('#diaryEntriesList');
-    const closeBtn = modal.querySelector('.modal-close');
-    closeBtn.addEventListener('click', () => modal.style.display = 'none');
-    window.addEventListener('click', e => {
-        if (e.target === modal) modal.style.display = 'none';
+    // 닫기 버튼
+    popupClose.addEventListener('click', () => {
+        popup.classList.add('hidden');
     });
 
-    // 4) 각 날짜 셀에 클릭 핸들러 등록
+    // 외부 클릭 시 팝업 닫기
+    window.addEventListener('click', (e) => {
+        if (e.target === popup) {
+            popup.classList.add('hidden');
+        }
+    });
+
+    // 날짜 셀 클릭 이벤트 등록
     document.querySelectorAll('td[data-day]').forEach(td => {
         td.addEventListener('click', () => {
             const day = td.getAttribute('data-day');
             const entries = entriesByDay[day] || [];
 
-            // 일기 없으면 모달 열지 않음
             if (entries.length === 0) return;
 
-            // 기존 목록 초기화
-            entryList.innerHTML = '';
+            // 날짜 타이틀 설정
+            const year = document.querySelector('.calendar-nav span')?.textContent?.split('년')[0]?.trim();
+            const month = document.querySelector('.calendar-nav span')?.textContent?.split('년')[1]?.replace('월','')?.trim();
+            const dateStr = `${year}/${month.padStart(2, '0')}/${day.padStart(2, '0')}`;
+            popupDate.textContent = dateStr;
 
-            // 제목이 20자 초과 시 자르고 '...' 추가
+            // 리스트 초기화
+            popupList.innerHTML = '';
+
+            // 일기 리스트 렌더링
             entries.forEach(entry => {
-                const title = entry.title.length > 20
-                    ? entry.title.slice(0, 20) + '…'
-                    : entry.title;
-
                 const li = document.createElement('li');
                 const a = document.createElement('a');
-                a.href = urlTemplate.replace('0', entry.pk);
-                a.textContent = title;
+                a.href = window.diaryDetailUrlTemplate.replace('0', entry.pk);
+                a.textContent = entry.title.length > 20 ? entry.title.slice(0, 20) + '…' : entry.title;
                 li.appendChild(a);
-                entryList.appendChild(li);
+                popupList.appendChild(li);
             });
 
-            // 모달 띄우기
-            modal.style.display = 'block';
+            popup.classList.remove('hidden');
         });
     });
 });
