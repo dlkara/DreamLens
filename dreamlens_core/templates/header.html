@@ -1,8 +1,11 @@
 {% load static %}
 
-<link rel="stylesheet" href="{% static 'css/header.css' %}">
+<link rel="stylesheet" href="{% static 'css/header.css' %}?v=2">
 
-
+<!-- 상단 로고 -->
+<a href="{% url 'index' %}">
+    <div class="logo-bar">DreamLens</div>
+</a>
 
 <!-- 햄버거 버튼 -->
 <button id="hamburgerBtn" class="hamburger">☰</button>
@@ -27,18 +30,18 @@
     <hr>
 
     <!-- 공개 접근 가능 -->
-    <a href="{% url 'dream_interpreter' %}" class="btn">🔮 해몽하기</a>
-    <a href="{% url 'dream_dict' %}" class="btn">📖 꿈 사전</a>
-    <a href="{% url 'dream_combiner' %}" class="btn">🧩 꿈 조합기</a>
+    <a href="{% url 'dream_interpreter' %}" class="menu">🔮 해몽하기</a>
+    <a href="{% url 'dream_dict' %}" class="menu">📖 꿈 사전</a>
+    <a href="{% url 'dream_combiner' %}" class="menu">🧩 꿈 조합기</a>
 
     <!-- 로그인 필요: JS 체크 -->
-    <button class="btn" onclick="goToProtectedPage('{% url 'diary_list_base' %}')">📘 내 일기장</button>
-    <button class="btn" onclick="goToProtectedPage('{% url 'report' %}')">📊 분석 리포트</button>
+    <a href="javascript:void(0)" class="menu" onclick="goToProtectedPage('{% url 'diary_list_base' %}')">📘 내 일기장</a>
+    <a href="javascript:void(0)" class="menu" onclick="goToProtectedPage('{% url 'report' %}')">📊 분석 리포트</a>
 </div>
 
 <script src="{% static 'js/header.js' %}"></script>
 
-<!-- ✅ 로그인 상태 확인 및 보호된 메뉴 접근 제어 -->
+<!-- 로그인 상태 확인 및 보호된 메뉴 접근 제어 -->
 <script>
     function goToProtectedPage(targetUrl) {
         const isLoggedIn = "{{ user.is_authenticated|yesno:'true,false' }}" === "true";
