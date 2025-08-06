@@ -4,19 +4,24 @@
     font-family: sans-serif;
 }
 
+/* ── 탭 영역: 이전처럼 DIV 구조 ── */
 .tabs {
     display: flex;
-    margin-bottom: 1em;
+    margin-bottom: -1px; /* 차트 테두리와 맞닿도록 */
 }
 
 .tab {
-    flex: 1;
-    padding: 0.75em;
-    background: #f2f2f2;
-    border: none;
+    background: #f0f0f0;
+    color: #333;
+    border: 1px solid #ccc;
+    border-bottom: none;
+    padding: 0.6em 1.2em;
     cursor: pointer;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
     font-weight: bold;
-    transition: background .2s;
+    transition: background .2s, color .2s;
+    margin-right: 4px; /* 탭 간 간격 */
 }
 
 .tab:hover {
@@ -24,15 +29,30 @@
 }
 
 .tab.active {
-    background: #ffffff;
-    border-bottom: 3px solid #007bff;
-}
-
-.chart-wrapper {
+    background: #fff;
+    color: #000;
     position: relative;
+    top: 1px;
+    z-index: 2;
 }
 
-.chart-wrapper canvas {
-    width: 100% !important;
-    height: auto !important;
+/* ── 차트 래퍼 ── */
+.chart-wrapper {
+    border: 1px solid #ccc;
+    padding: 1em;
+    background: #fff;
+}
+
+/* ── 결과 문구 ── */
+.result-text {
+    text-align: center;
+    margin-top: 1em;
+    font-size: 1.1em;
+}
+
+#resultLabel {
+    font-weight: bold;
+    background-color: yellow;
+    padding: 0.1em 0.3em 0.3em;
+    border-radius: 10px;
 }

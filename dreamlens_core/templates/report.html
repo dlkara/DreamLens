@@ -4,36 +4,37 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>DreamLens 분석 리포트</title>
+    <title>꿈 일기 분석 리포트</title>
     <link rel="stylesheet" href="{% static 'css/report.css' %}">
 </head>
 <body>
     {% include 'header.html' %}
 
+    <h2>내 일기장 분석 리포트</h2>
+
     <div class="report-container">
-    <div class="tabs">
-        <button id="typeTab" class="tab active">꿈 종류 분석</button>
-        <button id="emotionTab" class="tab">감정 분석</button>
-    </div>
-    <div class="chart-wrapper">
-        <canvas id="reportChart"></canvas>
-    </div>
+        <!-- ① 폴더 형태 탭 -->
+        <div class="tabs">
+            <button id="typeTab" class="tab active">꿈 종류 분석</button>
+            <button id="emotionTab" class="tab">감정 분석</button>
+        </div>
+
+        <div class="chart-wrapper">
+            <canvas id="reportChart"></canvas>
+
+            <div class="result-text">
+                가장 많이 꾼 꿈 종류는 <mark id="resultLabel">–</mark>이네요!
+            </div>
+        </div>
     </div>
 
     {% include 'footer.html' %}
 
-    <!-- 1. Chart.js 로드 (반드시 report.js 앞에!) -->
+    <!-- 1) Chart.js UMD 로드 (반드시 report.js 앞에) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
 
-    <!-- 2. 데이터 주입 (context 데이터) -->
+    <!-- 2) Django에서 주입한 데이터 -->
     <script>
-        console.log('▶ context 데이터:', {
-            dreamLabels: {{ dream_labels|safe }},
-            dreamData:   {{ dream_data|safe }},
-            emotionLabels: {{ emotion_labels|safe }},
-            emotionIcons:  {{ emotion_icons|safe }},
-            emotionData:   {{ emotion_data|safe }}
-        });
         const dreamLabels   = {{ dream_labels|safe }};
         const dreamData     = {{ dream_data|safe }};
         const emotionLabels = {{ emotion_labels|safe }};
@@ -41,7 +42,7 @@
         const emotionData   = {{ emotion_data|safe }};
     </script>
 
-    <!-- 3. report.js (실제 차트 생성 스크립트) -->
-    <script src="{% static 'js/report.js' %}?v={{ now_timestamp }}"></script>
+    <!-- 3) 커스텀 리포트 스크립트 -->
+    <script src="{% static 'js/report.js' %}"></script>
 </body>
 </html>
