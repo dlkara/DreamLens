@@ -1,10 +1,47 @@
+{% load static %}
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>DreamLens 분석 리포트</title>
+    <link rel="stylesheet" href="{% static 'css/report.css' %}">
 </head>
 <body>
-report
+    {% include 'header.html' %}
+
+    <div class="report-container">
+    <div class="tabs">
+        <button id="typeTab" class="tab active">꿈 종류 분석</button>
+        <button id="emotionTab" class="tab">감정 분석</button>
+    </div>
+    <div class="chart-wrapper">
+        <canvas id="reportChart"></canvas>
+    </div>
+    </div>
+
+    {% include 'footer.html' %}
+
+    <!-- 1. Chart.js 로드 (반드시 report.js 앞에!) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
+
+    <!-- 2. 데이터 주입 (context 데이터) -->
+    <script>
+        console.log('▶ context 데이터:', {
+            dreamLabels: {{ dream_labels|safe }},
+            dreamData:   {{ dream_data|safe }},
+            emotionLabels: {{ emotion_labels|safe }},
+            emotionIcons:  {{ emotion_icons|safe }},
+            emotionData:   {{ emotion_data|safe }}
+        });
+        const dreamLabels   = {{ dream_labels|safe }};
+        const dreamData     = {{ dream_data|safe }};
+        const emotionLabels = {{ emotion_labels|safe }};
+        const emotionIcons  = {{ emotion_icons|safe }};
+        const emotionData   = {{ emotion_data|safe }};
+    </script>
+
+    <!-- 3. report.js (실제 차트 생성 스크립트) -->
+    <script src="{% static 'js/report.js' %}?v={{ now_timestamp }}"></script>
 </body>
 </html>

@@ -19,12 +19,13 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from dreamlens_core.models import Interpretation
-
 from django.contrib.auth import get_user_model  # 현재 설정된 User 모델 반환
 
 User = get_user_model()
 
+from django.db.models import Count
+
+from .models import Interpretation
 from .models import DreamDict
 from .models import Diary
 from .forms import DiaryForm
@@ -489,8 +490,41 @@ def diary_writeOk(request):
 # ------------------------------
 # 5. 분석 리포트 TODO : 현정
 # ------------------------------
+@login_required
 def report(request):
-    return render(request, "report.html")
+    # 1) 현재 사용자 일기 전체 조회
+    diaries = Diary.objects.filter(user=request.user)
+
+    # 2) 꿈 종류 분석: dream_type__type별 일기 수 집계
+    dream_counts = (
+        diaries
+        .values('dream_type__type')
+        .annotate(count=Count('id'))
+        .order_by('-count')
+    )
+    dream_labels = [item['dream_type__type'] for item in dream_counts]
+    dream_data = [item['count'] for item in dream_counts]
+
+    # 3) 감정 분석: emotion__name, emotion__icon별 일기 수 집계
+    emotion_counts = (
+        diaries
+        .values('emotion__name', 'emotion__icon')
+        .annotate(count=Count('id'))
+        .order_by('-count')
+    )
+    emotion_labels = [item['emotion__name'] for item in emotion_counts]
+    emotion_icons = [item['emotion__icon'] for item in emotion_counts]
+    emotion_data = [item['count'] for item in emotion_counts]
+
+    # 4) JSON 직렬화 (ensure_ascii=False 로 한글 깨짐 방지)
+    context = {
+        'dream_labels': json.dumps(dream_labels, ensure_ascii=False),
+        'dream_data': json.dumps(dream_data),
+        'emotion_labels': json.dumps(emotion_labels, ensure_ascii=False),
+        'emotion_icons': json.dumps(emotion_icons, ensure_ascii=False),
+        'emotion_data': json.dumps(emotion_data),
+    }
+    return render(request, 'report.html', context)
 
 
 # ------------------------------
