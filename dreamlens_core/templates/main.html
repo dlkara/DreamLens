@@ -6,16 +6,25 @@
     <meta charset="UTF-8">
     <title>DreamLens</title>
     <link rel="stylesheet" href="{% static 'css/common.css' %}">
+    <link rel="stylesheet" href="{% static 'css/header.css' %}">
 </head>
 <body>
     {% include "header.html" %}
 
-    <main style="padding: 40px; text-align: center;">
-        <h1>꿈의 조각을 맞춰보세요!</h1>
+    <main class="main-container">
+        <div class="hero-section">
+            <h1 class="main-title">꿈의 조각을 맞춰보세요!</h1>
 
-        <div>
-            <a href="/interpret/" class="btn big">🔮 해몽하러 가기</a><br>
-            <a href="/dict/" class="btn big">📘 꿈 사전 보기</a><br>
+            <div class="button-group">
+                <a href="/interpret/" class="btn btn-primary btn-large">
+                    <span class="btn-icon">🔮</span>
+                    해몽하러 가기
+                </a>
+                <a href="/dict/" class="btn btn-secondary btn-large">
+                    <span class="btn-icon">📘</span>
+                    꿈 사전 보기
+                </a>
+            </div>
         </div>
     </main>
 
