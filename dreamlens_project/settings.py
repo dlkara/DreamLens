@@ -148,3 +148,14 @@ load_dotenv(dotenv_path=BASE_DIR / '.env')
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 AUTH_USER_MODEL = 'dreamlens_core.User'
+
+# settings.py
+
+# 브라우저 닫으면 세션 만료
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+# ⏱ 세션 만료 시간 설정 (초 단위) - 예: 1시간
+SESSION_COOKIE_AGE = 3600  # 1시간 = 3600초
+
+
+
