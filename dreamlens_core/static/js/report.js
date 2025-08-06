@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const typeTab = document.getElementById('typeTab');
     const emotionTab = document.getElementById('emotionTab');
-    const resultLabel = document.getElementById('resultLabel');
+    const resultText = document.getElementById('resultText');
     const ctx = document.getElementById('reportChart').getContext('2d');
     let chart;
 
@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 4) 차트 생성 공통 함수 (배경 80% 투명, 테두리 원색 1px)
     function createChart(labels, data, colors) {
         if (chart) chart.destroy();
-        const bgColors = colors.map(c => hexToRgba(c, 0.6));
+        const bgColors = colors.map(c => hexToRgba(c, 0.3));
         const bdColors = colors;
         chart = new Chart(ctx, {
             type: 'pie',
@@ -73,17 +73,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 5) 결과 문구 업데이트
-    function updateResultText(labels, data) {
-        if (!data.length) {
-            resultLabel.innerText = '–';
-            return;
-        }
-        const maxIdx = data.reduce(
-            (best, cur, i, arr) => (cur > arr[best] ? i : best),
-            0
-        );
-        resultLabel.innerText = `"${labels[maxIdx]}"`;
+    // 5) 결과 문구 전체를 세팅
+    function renderResult(prefix, label) {
+        resultText.innerHTML = `
+      ${prefix} <strong id="resultLabel">"${label}"</strong>이네요!
+    `.trim();
     }
 
     // 6) “꿈 종류 분석” 표시
@@ -96,7 +90,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const colors = DREAM_TYPE_ORDER.map(k => DREAM_TYPE_COLORS[k]);
 
         createChart(labels, data, colors);
-        updateResultText(labels, data);
+
+        const maxIdx = data.indexOf(Math.max(...data));
+        renderResult('가장 많이 꾼 꿈 종류는', labels[maxIdx]);
+
         typeTab.classList.add('active');
         emotionTab.classList.remove('active');
     }
@@ -108,7 +105,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const colors = labels.map(l => getEmotionColor(l));
 
         createChart(labels, data, colors);
-        updateResultText(labels, data);
+
+        const maxIdx = data.indexOf(Math.max(...data));
+        renderResult('가장 많이 느낀 감정은', labels[maxIdx]);
+
         emotionTab.classList.add('active');
         typeTab.classList.remove('active');
     }

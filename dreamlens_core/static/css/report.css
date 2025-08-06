@@ -1,17 +1,23 @@
+/* static/css/report.css */
+
 .report-container {
     max-width: 600px;
     margin: 2em auto;
     font-family: sans-serif;
 }
 
-/* ── 탭 영역: 이전처럼 DIV 구조 ── */
+/* ── 탭 영역 ── */
 .tabs {
     display: flex;
-    margin-bottom: -1px; /* 차트 테두리와 맞닿도록 */
+    width: 100%;
+    gap: 4px;
+    margin-bottom: -1px;
 }
 
 .tab {
-    background: #f0f0f0;
+    flex: 1;
+    text-align: center;
+    background: #ddd; /* 비선택 탭 기본 회색 */
     color: #333;
     border: 1px solid #ccc;
     border-bottom: none;
@@ -21,15 +27,14 @@
     border-top-right-radius: 6px;
     font-weight: bold;
     transition: background .2s, color .2s;
-    margin-right: 4px; /* 탭 간 간격 */
 }
 
 .tab:hover {
-    background: #e0e0e0;
+    background: #ccc; /* 호버 시 조금 더 진한 회색 */
 }
 
 .tab.active {
-    background: #fff;
+    background: #fff; /* 선택된 탭은 흰색 */
     color: #000;
     position: relative;
     top: 1px;
@@ -50,9 +55,10 @@
     font-size: 1.1em;
 }
 
+/* ── 결과 하이라이트 ── */
 #resultLabel {
-    font-weight: bold;
     background-color: yellow;
+    font-weight: bold;
     padding: 0.1em 0.3em 0.3em;
-    border-radius: 10px;
+    border-radius: 2px;
 }
