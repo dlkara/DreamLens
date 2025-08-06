@@ -35,12 +35,8 @@
         <tr>
             {% for cell in week %}
             {% if cell.day %}
-            <td class="
-                            {% if cell.day == today_day %}today{% endif %}
-                            {% if cell.is_good %} good
-                            {% elif cell.is_bad %} bad
-                            {% elif cell.is_normal %} normal
-                            {% endif %}">
+            <td class="{% if cell.day == today_day %}today{% endif %}
+                       {% if cell.is_good %} good {% elif cell.is_bad %} bad {% elif cell.is_normal %} normal {% endif %}">
                 {% if cell.pk %}
                 <a href="{% url 'diary_detail' pk=cell.pk %}">
                     {{ cell.day }}
@@ -57,6 +53,9 @@
         {% endfor %}
         </tbody>
     </table>
+
+    <a class="btn" href="{% url 'dream_interpreter' %}">해몽하러 가기</a>
+    <a class="btn" href="{% url 'report' %}">내 일기장 분석하기</a>
 
     {% include 'footer.html' %}
     <script src="{% static 'js/header.js' %}"></script>
