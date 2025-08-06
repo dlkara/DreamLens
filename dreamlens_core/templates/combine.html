@@ -1,45 +1,60 @@
 {% load static %}
-
-{% load static %}
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <title>꿈 조합기</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/common.css' %}">
     <script src="{% static 'js/combine.js' %}"></script>
 </head>
 <body>
     {% include "header.html" %}
 
-    <h2>꿈 조합기</h2>
+    <div class="main-container combine-page">
+        <div class="container">
+            <div class="page-header text-center">
+                <h1 class="page-title">🧠 꿈 조합기</h1>
+                <p class="page-subtitle">여러 꿈 키워드를 조합해 AI가 해몽해드려요.</p>
+            </div>
 
-    <form method="post" id="dream-form">
-        {% csrf_token %}
-        <input type="text" name="kw1" placeholder="키워드 1" value="{{ kw1|default:'' }}"/><br>
-        <input type="text" name="kw2" placeholder="키워드 2" value="{{ kw2|default:'' }}"/><br>
-        <input type="text" name="kw3" placeholder="키워드 3" value="{{ kw3|default:'' }}"/><br>
-        <button type="submit" id="combine-btn" {% if loading %}disabled{% endif %}>
-            꿈 조합하기
-        </button>
-    </form>
+            <form method="post" id="dream-form" class="dream-form">
+                {% csrf_token %}
+                <div class="form-group">
+                    <input type="text" name="kw1" placeholder="키워드 1" value="{{ kw1|default:'' }}" class="form-input">
+                </div>
+                <div class="form-group">
+                    <input type="text" name="kw2" placeholder="키워드 2" value="{{ kw2|default:'' }}" class="form-input">
+                </div>
+                <div class="form-group">
+                    <input type="text" name="kw3" placeholder="키워드 3" value="{{ kw3|default:'' }}" class="form-input">
+                </div>
+                <div class="action-buttons">
+                    <button type="submit" id="combine-btn" class="btn btn-primary btn-large" {% if loading %}disabled{% endif %}>
+                        꿈 조합하기
+                    </button>
+                </div>
+            </form>
 
-    {% if loading %}
-    <div id="loading-message">🔄 해몽 중입니다...</div>
-    {% endif %}
+            {% if loading %}
+            <div id="loading-message" class="loading-box">
+                🔄 해몽 중입니다...
+            </div>
+            {% endif %}
 
-    {% if interpretation %}
-    <div id="result-block">
-        <h3>🔮 해몽 결과는 …</h3>
-        <p>{{ interpretation|linebreaks }}</p>
+            {% if interpretation %}
+            <div id="result-block" class="result-box">
+                <h3>🔮 해몽 결과는 …</h3>
+                <p>{{ interpretation|linebreaks }}</p>
+            </div>
+            {% endif %}
+
+            {% if summary %}
+                <div id="summary-box" class="summary-box">
+                    <p><strong>🧾 요약</strong><br><br>{{ summary|linebreaksbr }}</p>
+                </div>
+            {% endif %}
+        </div>
     </div>
-    {% endif %}
-
-    {% if summary %}
-    <div id="summary-box">
-        <strong>🧾 요약</strong>
-        <p>{{ summary|linebreaks }}</p>
-    </div>
-    {% endif %}
 </body>
 </html>
