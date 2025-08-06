@@ -17,7 +17,6 @@ urlpatterns = [
     # 꿈 일기장 -> TODO : 현정, 지우
     path('diary/list/', views.diary_list, name='diary_list_base'),  # 기본 진입: today 리다이렉트
     path('diary/list/<int:yyyymm>', views.diary_list, name='diary_list'),
-    # 꿈 일기장 작성
     path('diary/write/', views.diary_write, name='diary_write'),
     path('diary/writeOk/', views.diary_writeOk, name='diary_writeOk'),
     path('diary/detail/<int:pk>/', views.diary_detail, name='diary_detail'),
