@@ -1,66 +1,171 @@
-<!-- templates/register-user.html -->
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <title>일반 회원가입</title>
+    <meta charset="UTF-8">
+    <title>회원가입 - DreamLens</title>
+    <link rel="stylesheet" href="{% static 'css/common.css' %}">
 </head>
 <body>
-{% include 'header.html' %}
-  <h2>일반 회원가입</h2>
+    {% include 'header.html' %}
 
-<form method="POST" action="{% url 'register_user' %}">
+    <main class="main-container">
+        <div class="form-section register-form">
+            <div class="form-header">
+                <h1 class="form-title">회원가입</h1>
+                <p class="form-subtitle">꿈의 세계에 오신 것을 환영합니다!</p>
+            </div>
 
+            <form method="POST" action="{% url 'register_user' %}" class="register-form-container">
+                {% csrf_token %}
 
-<form method="POST">
-    {% csrf_token %}
+                <!-- 아이디 입력 -->
+                <div class="form-group">
+                    <label for="username" class="form-label">아이디 <span class="required">*</span></label>
+                    <div class="input-group">
+                        <input
+                            type="text"
+                            id="username"
+                            name="username"
+                            placeholder="아이디 (4자 이상)"
+                            class="form-input"
+                            required
+                            minlength="4"
+                        >
+                        <button type="button" onclick="checkDuplicate()" class="btn btn-secondary btn-small">
+                            중복확인
+                        </button>
+                    </div>
+                    <div id="id-check-msg" class="validation-message"></div>
+                </div>
 
-    <!-- 아이디 입력 -->
-    <input type="text" name="username" placeholder="아이디 * (4자 이상)" required>
-    <button type="button" onclick="checkDuplicate()">아이디 중복 확인</button>
+                <!-- 비밀번호 -->
+                <div class="form-group">
+                    <label for="password" class="form-label">비밀번호 <span class="required">*</span></label>
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        placeholder="비밀번호를 입력하세요"
+                        class="form-input"
+                        required
+                    >
+                </div>
 
-    <!-- 비밀번호 -->
-    <input type="password" name="password" placeholder="비밀번호 *" required>
-    <input type="password" name="password2" placeholder="비밀번호 확인 *" required>
+                <div class="form-group">
+                    <label for="password2" class="form-label">비밀번호 확인 <span class="required">*</span></label>
+                    <input
+                        type="password"
+                        id="password2"
+                        name="password2"
+                        placeholder="비밀번호를 다시 입력하세요"
+                        class="form-input"
+                        required
+                    >
+                </div>
 
-    <!-- 닉네임 -->
-    <input type="text" name="nickname" placeholder="닉네임 *" required>
+                <!-- 닉네임 -->
+                <div class="form-group">
+                    <label for="nickname" class="form-label">닉네임 <span class="required">*</span></label>
+                    <input
+                        type="text"
+                        id="nickname"
+                        name="nickname"
+                        placeholder="닉네임을 입력하세요"
+                        class="form-input"
+                        required
+                    >
+                </div>
 
-    <!-- 생년월일 -->
-    <input type="date" name="birth" placeholder="생년월일 (8자리)">
+                <!-- 생년월일 -->
+                <div class="form-group">
+                    <label for="birth" class="form-label">생년월일</label>
+                    <input
+                        type="date"
+                        id="birth"
+                        name="birth"
+                        class="form-input"
+                    >
+                </div>
 
-    <!-- 성별 -->
-    <button type="button">성별</button>
-    <select name="gender">
-      <option value="">선택 안 함 (default)</option>
-      <option value="남자">남자</option>
-      <option value="여자">여자</option>
-      <option value="기타">기타</option>
-    </select>
+                <!-- 성별 -->
+                <div class="form-group">
+                    <label for="gender" class="form-label">성별</label>
+                    <div class="select-wrapper">
+                        <select name="gender" id="gender" class="form-select">
+                            <option value="">선택 안 함</option>
+                            <option value="남자">남자</option>
+                            <option value="여자">여자</option>
+                            <option value="기타">기타</option>
+                        </select>
+                        <div class="select-arrow">
+                            <span>▼</span>
+                        </div>
+                    </div>
+                </div>
 
-    <br>
-    <button type="submit">회원가입</button>
-  </form>
+                <button type="submit" class="btn btn-primary btn-large btn-full">
+                    <span class="btn-icon">🎉</span>
+                    회원가입하기
+                </button>
+            </form>
 
-  <script>
-    function checkDuplicate() {
-      const username = document.querySelector('input[name="username"]').value;
-      fetch(`/check-username/?username=${username}`)
-        .then(res => res.json())
-        .then(data => {
-          const msgTag = document.getElementById('id-check-msg');
-          if (data.exists) {
-            msgTag.style.color = 'red';
-            msgTag.innerText = '다른 아이디를 입력해주세요';
-          } else {
-            msgTag.style.color = 'blue';
-            msgTag.innerText = '해당 아이디로 가입합니다';
-          }
+            <div class="form-footer">
+                <p class="footer-text">
+                    이미 계정이 있으신가요?
+                    <a href="{% url 'login' %}" class="footer-link">로그인</a>
+                </p>
+            </div>
+        </div>
+    </main>
+
+    {% include 'footer.html' %}
+
+    <script src="{% static 'js/header.js' %}"></script>
+    <script>
+        function checkDuplicate() {
+            const username = document.querySelector('input[name="username"]').value;
+            const msgTag = document.getElementById('id-check-msg');
+
+            if (username.length < 4) {
+                msgTag.className = 'validation-message error';
+                msgTag.innerHTML = '<span class="message-icon">❌</span><span>아이디는 4자 이상이어야 합니다</span>';
+                return;
+            }
+
+            // 로딩 상태 표시
+            msgTag.className = 'validation-message loading';
+            msgTag.innerHTML = '<span class="message-icon">⏳</span><span>확인 중...</span>';
+
+            fetch(`/check-username/?username=${username}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.exists) {
+                        msgTag.className = 'validation-message error';
+                        msgTag.innerHTML = '<span class="message-icon">❌</span><span>이미 사용 중인 아이디입니다</span>';
+                    } else {
+                        msgTag.className = 'validation-message success';
+                        msgTag.innerHTML = '<span class="message-icon">✅</span><span>사용 가능한 아이디입니다</span>';
+                    }
+                })
+                .catch(error => {
+                    msgTag.className = 'validation-message error';
+                    msgTag.innerHTML = '<span class="message-icon">❌</span><span>확인 중 오류가 발생했습니다</span>';
+                });
+        }
+
+        // 비밀번호 확인 검증
+        document.getElementById('password2').addEventListener('input', function() {
+            const password = document.getElementById('password').value;
+            const password2 = this.value;
+
+            if (password2 && password !== password2) {
+                this.style.borderColor = 'var(--color-red)';
+            } else {
+                this.style.borderColor = 'var(--color-gray-200)';
+            }
         });
-    }
-  </script>
-</form>
+    </script>
 </body>
 </html>
-
-{% include 'footer.html' %}

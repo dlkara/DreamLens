@@ -35,26 +35,22 @@
     cursor: default;
 }
 
-/* 🔽 수정된 부분: font-weight와 text-decoration 추가 */
 .calendar td.today {
     background: #fff9c4;
     font-weight: bold;
     text-decoration: underline;
 }
 
-/* 길몽 (초록색 배경) */
 .calendar td.good {
-    background: #c8e6c9;
+    background: #c8e6c9;  /* 길몽 */
 }
 
-/* 흉몽 (빨간색 배경) */
 .calendar td.bad {
-    background: #ffcdd2;
+    background: #ffcdd2;  /* 흉몽 */
 }
 
-/* 일반꿈 (회색 배경) */
 .calendar td.normal {
-    background: #e0e0e0;
+    background: #e0e0e0;  /* 일반꿈 */
 }
 
 .calendar td a {

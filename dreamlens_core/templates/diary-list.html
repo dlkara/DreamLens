@@ -34,19 +34,20 @@
         {% for week in month_days %}
         <tr>
             {% for day in week %}
-                {% if day %}
-                    <td class="{% if day == today_day %}today{% endif %} {% if day in good_days %}good{% elif day in bad_days %}bad{% elif day in normal_days %}normal{% endif %}">
-                        {% if day in good_days or day in bad_days or day in normal_days %}
-                            <a href="{% url 'diary-detail' year=year month=month day=day %}">
-                                {{ day }}
-                            </a>
-                        {% else %}
-                            {{ day }}
-                        {% endif %}
-                    </td>
+            {% if day %}
+            <td class="{% if day == today_day %}today{% endif %}
+                               {% if day in good_days %}good{% elif day in bad_days %}bad{% elif day in normal_days %}normal{% endif %}">
+                {% if day in good_days or day in bad_days or day in normal_days %}
+                <a href="{% url 'diary-detail' year=year month=month day=day %}">
+                    {{ day }}
+                </a>
                 {% else %}
-                    <td class="empty"></td>
+                {{ day }}
                 {% endif %}
+            </td>
+            {% else %}
+            <td class="empty"></td>
+            {% endif %}
             {% endfor %}
         </tr>
         {% endfor %}

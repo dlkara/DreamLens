@@ -1,22 +1,33 @@
 import os
 import openai
 import json
+import faiss
+import numpy as np
 from pathlib import Path
+
+import calendar
+from datetime import date
+from datetime import datetime
+from django.utils import timezone
+from dateutil.relativedelta import relativedelta
+
 from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import render
-from .models import DreamDict
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-import faiss
-import numpy as np
 from dreamlens_core.models import Interpretation
+from .forms import DiaryForm
 
-from django.contrib.auth import get_user_model  # ✅ 현재 설정된 User 모델 반환
-
+from django.contrib.auth import get_user_model  # 현재 설정된 User 모델 반환
 User = get_user_model()
+
+from .models import DreamDict
+from .models import Diary
+from .forms import MyPageForm
+
 
 # ------------------------------
 # 0. 공통 설정
@@ -326,76 +337,54 @@ def dream_combiner(request):
 # ------------------------------
 # 4. 꿈 일기장  TODO : 현정, 지우
 # ------------------------------
-
-import calendar
-from datetime import date, timedelta
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-from .models import Diary
-
-from datetime import date
-from dateutil.relativedelta import relativedelta
-from django.shortcuts import redirect, render
-from django.utils import timezone
-from .models import Diary
-
+@login_required
 def diary_list(request, yyyymm=None):
-    # 1) 파라미터 없으면 오늘 기준으로 YYYYMM 계산 → 리다이렉트
+    # 1) 파라미터가 없으면 오늘 기준으로 redirect
     if yyyymm is None:
         today = timezone.localdate()
         yyyymm = today.year * 100 + today.month
         return redirect('diary_list', yyyymm=yyyymm)
 
-    # 2) yyyymm 분해
-    year  = yyyymm // 100
+    # 2) 연·월 분해
+    year = yyyymm // 100
     month = yyyymm % 100
 
-    # 3) 달력용 변수 준비 (생략)… same as before
+    # 3) 오늘 하이라이트용
     today = timezone.localdate()
     today_day = today.day if (today.year == year and today.month == month) else None
 
+    # 4) 이전/다음 달 계산
     first_of_month = date(year, month, 1)
-    prev_month_dt  = first_of_month - relativedelta(months=1)
-    next_month_dt  = first_of_month + relativedelta(months=1)
+    prev_month_dt = first_of_month - relativedelta(months=1)
+    next_month_dt = first_of_month + relativedelta(months=1)
+    prev_yyyymm = prev_month_dt.year * 100 + prev_month_dt.month
+    next_yyyymm = next_month_dt.year * 100 + next_month_dt.month
 
-    # 주별로 자른 2D 리스트 생성 (None=빈셀)
-    month_days = []
-    week = []
-    for d in range(1, (first_of_month + relativedelta(months=1)).day):
-        curr = date(year, month, d)
-        if d == 1:
-            # ISO weekday: 월=1…일=7 → 달력에서 일요일을 맨 앞에 두려면 curr.weekday()+1 조정
-            for _ in range((curr.weekday() + 1) % 7):
-                week.append(None)
-        week.append(d)
-        if curr.weekday() == 6:
-            month_days.append(week)
-            week = []
-    if week:
-        while len(week) < 7:
-            week.append(None)
-        month_days.append(week)
+    # 5) Python calendar 모듈로 “주별 7칸” 배열 생성 (일요일 시작)
+    cal = calendar.Calendar(firstweekday=6)  # 6 = Sunday
+    raw_weeks = cal.monthdayscalendar(year, month)
+    # raw_weeks: [[0, 0, 0, 0, 0, 1, 2], [3, 4, 5, ...], ...]
+    month_days = [
+        [day if day != 0 else None for day in week]
+        for week in raw_weeks
+    ]
 
-    # 4) ORM 로 이 user, 이 연·월의 diary 가져오기
+    # 6) 이 user, 이 연·월의 Diary 쿼리
     qs = Diary.objects.filter(
         user=request.user,
         date__year=year,
         date__month=month
     )
-    days = {d.date.day for d in qs}
 
-    # 5) 감정별 분리 (예: emotion_id 4,5 길몽 / 1,2 흉몽)
-    good_days   = set(qs.filter(emotion_id__in=[4,5])
-                          .values_list('date__day', flat=True))
-    bad_days    = set(qs.filter(emotion_id__in=[1,2])
-                          .values_list('date__day', flat=True))
+    # 7) 감정별 날짜 세트로 분리
+    days = set(qs.values_list('date__day', flat=True))
+    good_days = set(qs.filter(emotion_id__in=[4, 5])
+                    .values_list('date__day', flat=True))
+    bad_days = set(qs.filter(emotion_id__in=[1, 2])
+                   .values_list('date__day', flat=True))
     normal_days = days - good_days - bad_days
 
-    # 6) 네비게이션용 YYYYMM 계산
-    prev_yyyymm = prev_month_dt.year * 100 + prev_month_dt.month
-    next_yyyymm = next_month_dt.year * 100 + next_month_dt.month
-
-    # 7) context
+    # 8) context 전달
     context = {
         'year': year,
         'month': month,
@@ -413,6 +402,7 @@ def diary_list(request, yyyymm=None):
 
 def diary_detail(request, year, month, day):
     render(request, 'diary-detail.html')
+
 
 def diary_write(request):
     if request.method == "GET":
@@ -451,19 +441,7 @@ def report(request):
 # 6. 로그인/회원가입/마이페이지
 # ------------------------------
 
-# 로그인, 회원가입 - 안주경
-from django.contrib.auth import get_user_model
-from django.shortcuts import render, redirect
-from django.contrib import messages
-
-User = get_user_model()
-
-from datetime import datetime
-from django.contrib import messages
-from django.shortcuts import render, redirect
-from django.http import JsonResponse
-
-
+# 로그인, 회원가입
 def register_view(request):
     if request.method == "POST":
         username = request.POST['username']
@@ -481,7 +459,7 @@ def register_view(request):
             messages.error(request, "비밀번호가 일치하지 않습니다")
             return redirect('register_user')
 
-        # ✅ 닉네임을 별도로 저장
+        # 닉네임을 별도로 저장
         user = User.objects.create_user(username=username, password=password)
         user.nickname = nickname
         if birth:
@@ -507,9 +485,6 @@ def check_username(request):
     return JsonResponse({'exists': exists})
 
 
-
-
-
 # 로그인
 def login_view(request):
     if request.method == 'POST':
@@ -532,19 +507,6 @@ def logout_view(request):
 
 
 # 마이페이지
-from .forms import MyPageForm, DiaryForm
-
-# accounts/views.py
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from django.shortcuts import render, redirect
-from datetime import datetime
-
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from django.shortcuts import render, redirect
-from datetime import datetime
-
 @login_required
 def mypage(request):
     user = request.user
@@ -556,12 +518,12 @@ def mypage(request):
         birth_raw = request.POST.get('birth', '')  # 입력 이름 'birth'로 통일
         gender = request.POST.get('gender', '')
 
-        # ✅ 닉네임 필수
+        # 닉네임 필수
         if not nickname:
             messages.error(request, "닉네임은 필수입니다.")
             return redirect('mypage')
 
-        # ✅ 비밀번호 변경 시 입력값 확인
+        # 비밀번호 변경 시 입력값 확인
         if password or password2:
             if password != password2:
                 messages.error(request, "비밀번호가 일치하지 않습니다.")
@@ -569,7 +531,7 @@ def mypage(request):
             else:
                 user.set_password(password)
 
-        # ✅ 생년월일 선택 사항 처리
+        # 생년월일 선택 사항 처리
         if birth_raw:
             try:
                 user.birth = datetime.strptime(birth_raw, "%Y-%m-%d").date()
@@ -580,7 +542,7 @@ def mypage(request):
         else:
             user.birth = None  # 입력 안 했으면 비움
 
-        # ✅ 나머지 필드 업데이트
+        # 나머지 필드 업데이트
         user.nickname = nickname
         user.gender = gender
         user.save()
@@ -589,4 +551,3 @@ def mypage(request):
         return redirect('login')  # 비밀번호 변경 가능성이 있으므로 로그인 페이지로 리다이렉트
 
     return render(request, 'mypage.html')
-
