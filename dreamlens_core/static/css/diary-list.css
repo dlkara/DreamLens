@@ -60,3 +60,47 @@
     color: inherit;
     text-decoration: none;
 }
+
+
+/* 모달 백드롭 */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+/* 모달 박스 */
+.modal-content {
+    background: #fff;
+    margin: 10% auto;
+    padding: 1rem;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 400px;
+    position: relative;
+}
+
+/* 닫기 버튼 */
+.modal-close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+/* 리스트 스타일 초기화 */
+.modal-content ul {
+    list-style: none;
+    padding: 0;
+}
+
+/* 리스트 아이템 간 간격 */
+.modal-content li + li {
+    margin-top: 0.5rem;
+}

@@ -7,7 +7,18 @@
     <title>꿈 일기장</title>
     <link rel="stylesheet" href="{% static 'css/common.css' %}">
     <link rel="stylesheet" href="{% static 'css/header.css' %}">
-    <link rel="stylesheet" href="{% static 'css/diary_list.css' %}">
+    <link rel="stylesheet" href="{% static 'css/diary-list.css' %}">
+    <script src="{% static 'js/diary-list.js' %}" defer></script>
+
+    <!-- 날짜별 엔트리 JSON 삽입 -->
+    <script id="entriesByDayData" type="application/json">
+        {{ entries_by_day_json|safe }}
+    </script>
+
+    <!-- PK 기반 상세 링크 템플릿 (pk=0 자리만 나중에 replace) -->
+    <script>
+        window.diaryDetailUrlTemplate = "{% url 'diary_detail' pk=0 %}";
+    </script>
 </head>
 <body>
     {% include 'header.html' %}
@@ -35,15 +46,13 @@
         <tr>
             {% for cell in week %}
             {% if cell.day %}
-            <td class="{% if cell.day == today_day %}today{% endif %}
-                       {% if cell.is_good %} good {% elif cell.is_bad %} bad {% elif cell.is_normal %} normal {% endif %}">
-                {% if cell.pk %}
-                <a href="{% url 'diary_detail' pk=cell.pk %}">
-                    {{ cell.day }}
-                </a>
-                {% else %}
-                {{ cell.day }}
-                {% endif %}
+            <td class="{% if cell.day == today_day %} today {% endif %}
+                       {% if cell.is_good %} good
+                       {% elif cell.is_bad %} bad
+                       {% elif cell.is_normal %} normal
+                       {% endif %}"
+                data-day="{{ cell.day }}">
+                <span>{{ cell.day }}</span>
             </td>
             {% else %}
             <td class="empty"></td>
@@ -54,10 +63,8 @@
         </tbody>
     </table>
 
-    <a class="btn" href="{% url 'dream_interpreter' %}">해몽하러 가기</a>
-    <a class="btn" href="{% url 'report' %}">내 일기장 분석하기</a>
-
     {% include 'footer.html' %}
+
     <script src="{% static 'js/header.js' %}"></script>
 </body>
 </html>
