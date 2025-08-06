@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return `rgba(${parseInt(r, 16)}, ${parseInt(g, 16)}, ${parseInt(b, 16)}, ${alpha})`;
     }
 
-    // 4) 차트 생성 공통 함수 (배경 80% 투명, 테두리 원색 1px)
+    // 4) 차트 생성 공통 함수
     function createChart(labels, data, colors) {
         if (chart) chart.destroy();
         const bgColors = colors.map(c => hexToRgba(c, 0.3));

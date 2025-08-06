@@ -32,10 +32,8 @@
 
     {% include 'footer.html' %}
 
-    <!-- 1) Chart.js UMD 로드 (반드시 report.js 앞에) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
 
-    <!-- 2) Django에서 주입한 데이터 -->
     <script>
         const dreamLabels   = {{ dream_labels|safe }};
         const dreamData     = {{ dream_data|safe }};
@@ -44,7 +42,6 @@
         const emotionData   = {{ emotion_data|safe }};
     </script>
 
-    <!-- 3) 커스텀 리포트 스크립트 -->
     <script src="{% static 'js/report.js' %}"></script>
 </body>
 </html>
