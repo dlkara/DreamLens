@@ -323,16 +323,14 @@ def dream_combiner(request):
 
 import calendar
 from datetime import date, timedelta
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from .models import Diary
-
-from datetime import date
-from dateutil.relativedelta import relativedelta
-from django.shortcuts import redirect, render
 from django.utils import timezone
+
+from dateutil.relativedelta import relativedelta
 from .models import Diary
 
+@login_required
 def diary_list(request, yyyymm=None):
     # 1) 파라미터 없으면 오늘 기준으로 YYYYMM 계산 → 리다이렉트
     if yyyymm is None:
@@ -344,33 +342,39 @@ def diary_list(request, yyyymm=None):
     year  = yyyymm // 100
     month = yyyymm % 100
 
-    # 3) 달력용 변수 준비 (생략)… same as before
+    # 3) 오늘 날짜 (달력 하이라이트용)
     today = timezone.localdate()
     today_day = today.day if (today.year == year and today.month == month) else None
 
+    # 4) 한 달의 첫째/이전/다음 월 계산
     first_of_month = date(year, month, 1)
     prev_month_dt  = first_of_month - relativedelta(months=1)
     next_month_dt  = first_of_month + relativedelta(months=1)
 
-    # 주별로 자른 2D 리스트 생성 (None=빈셀)
+    # 5) 이번 달 마지막 일(day) 계산
+    last_day = calendar.monthrange(year, month)[1]
+
+    # 6) 주별로 자른 2D 리스트 생성 (None=빈셀)
     month_days = []
     week = []
-    for d in range(1, (first_of_month + relativedelta(months=1)).day):
+    for d in range(1, last_day + 1):
         curr = date(year, month, d)
         if d == 1:
-            # ISO weekday: 월=1…일=7 → 달력에서 일요일을 맨 앞에 두려면 curr.weekday()+1 조정
+            # ISO weekday: 월=1…일=7 → 달력에서 일요일을 맨 앞에 두려면 (weekday+1)%7
             for _ in range((curr.weekday() + 1) % 7):
                 week.append(None)
         week.append(d)
+        # 일요일(weekday=6)이면 한 주 완성
         if curr.weekday() == 6:
             month_days.append(week)
             week = []
+    # 마지막 주 남은 칸 채우기
     if week:
         while len(week) < 7:
             week.append(None)
         month_days.append(week)
 
-    # 4) ORM 로 이 user, 이 연·월의 diary 가져오기
+    # 7) 이 user, 이 연·월의 diary 가져오기
     qs = Diary.objects.filter(
         user=request.user,
         date__year=year,
@@ -378,18 +382,18 @@ def diary_list(request, yyyymm=None):
     )
     days = {d.date.day for d in qs}
 
-    # 5) 감정별 분리 (예: emotion_id 4,5 길몽 / 1,2 흉몽)
+    # 8) 감정별 분리 (길몽/흉몽/일반)
     good_days   = set(qs.filter(emotion_id__in=[4,5])
                           .values_list('date__day', flat=True))
     bad_days    = set(qs.filter(emotion_id__in=[1,2])
                           .values_list('date__day', flat=True))
     normal_days = days - good_days - bad_days
 
-    # 6) 네비게이션용 YYYYMM 계산
+    # 9) 네비게이션용 YYYYMM 계산
     prev_yyyymm = prev_month_dt.year * 100 + prev_month_dt.month
     next_yyyymm = next_month_dt.year * 100 + next_month_dt.month
 
-    # 7) context
+    # 10) context
     context = {
         'year': year,
         'month': month,
