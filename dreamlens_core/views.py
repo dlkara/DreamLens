@@ -322,78 +322,63 @@ def dream_combiner(request):
 # ------------------------------
 
 import calendar
-from datetime import date, timedelta
+from datetime import date
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
-
 from dateutil.relativedelta import relativedelta
+
 from .models import Diary
+
 
 @login_required
 def diary_list(request, yyyymm=None):
-    # 1) 파라미터 없으면 오늘 기준으로 YYYYMM 계산 → 리다이렉트
+    # 1) 파라미터가 없으면 오늘 기준으로 redirect
     if yyyymm is None:
         today = timezone.localdate()
         yyyymm = today.year * 100 + today.month
         return redirect('diary_list', yyyymm=yyyymm)
 
-    # 2) yyyymm 분해
-    year  = yyyymm // 100
+    # 2) 연·월 분해
+    year = yyyymm // 100
     month = yyyymm % 100
 
-    # 3) 오늘 날짜 (달력 하이라이트용)
+    # 3) 오늘 하이라이트용
     today = timezone.localdate()
     today_day = today.day if (today.year == year and today.month == month) else None
 
-    # 4) 한 달의 첫째/이전/다음 월 계산
+    # 4) 이전/다음 달 계산
     first_of_month = date(year, month, 1)
-    prev_month_dt  = first_of_month - relativedelta(months=1)
-    next_month_dt  = first_of_month + relativedelta(months=1)
+    prev_month_dt = first_of_month - relativedelta(months=1)
+    next_month_dt = first_of_month + relativedelta(months=1)
+    prev_yyyymm = prev_month_dt.year * 100 + prev_month_dt.month
+    next_yyyymm = next_month_dt.year * 100 + next_month_dt.month
 
-    # 5) 이번 달 마지막 일(day) 계산
-    last_day = calendar.monthrange(year, month)[1]
+    # 5) Python calendar 모듈로 “주별 7칸” 배열 생성 (일요일 시작)
+    cal = calendar.Calendar(firstweekday=6)  # 6 = Sunday
+    raw_weeks = cal.monthdayscalendar(year, month)
+    # raw_weeks: [[0, 0, 0, 0, 0, 1, 2], [3, 4, 5, ...], ...]
+    month_days = [
+        [day if day != 0 else None for day in week]
+        for week in raw_weeks
+    ]
 
-    # 6) 주별로 자른 2D 리스트 생성 (None=빈셀)
-    month_days = []
-    week = []
-    for d in range(1, last_day + 1):
-        curr = date(year, month, d)
-        if d == 1:
-            # ISO weekday: 월=1…일=7 → 달력에서 일요일을 맨 앞에 두려면 (weekday+1)%7
-            for _ in range((curr.weekday() + 1) % 7):
-                week.append(None)
-        week.append(d)
-        # 일요일(weekday=6)이면 한 주 완성
-        if curr.weekday() == 6:
-            month_days.append(week)
-            week = []
-    # 마지막 주 남은 칸 채우기
-    if week:
-        while len(week) < 7:
-            week.append(None)
-        month_days.append(week)
-
-    # 7) 이 user, 이 연·월의 diary 가져오기
+    # 6) 이 user, 이 연·월의 Diary 쿼리
     qs = Diary.objects.filter(
         user=request.user,
         date__year=year,
         date__month=month
     )
-    days = {d.date.day for d in qs}
 
-    # 8) 감정별 분리 (길몽/흉몽/일반)
-    good_days   = set(qs.filter(emotion_id__in=[4,5])
-                          .values_list('date__day', flat=True))
-    bad_days    = set(qs.filter(emotion_id__in=[1,2])
-                          .values_list('date__day', flat=True))
+    # 7) 감정별 날짜 세트로 분리
+    days = set(qs.values_list('date__day', flat=True))
+    good_days = set(qs.filter(emotion_id__in=[4, 5])
+                    .values_list('date__day', flat=True))
+    bad_days = set(qs.filter(emotion_id__in=[1, 2])
+                   .values_list('date__day', flat=True))
     normal_days = days - good_days - bad_days
 
-    # 9) 네비게이션용 YYYYMM 계산
-    prev_yyyymm = prev_month_dt.year * 100 + prev_month_dt.month
-    next_yyyymm = next_month_dt.year * 100 + next_month_dt.month
-
-    # 10) context
+    # 8) context 전달
     context = {
         'year': year,
         'month': month,
@@ -412,8 +397,10 @@ def diary_list(request, yyyymm=None):
 def diary_detail(request, year, month, day):
     render(request, 'diary-detail.html')
 
+
 def diary_write(request):
     return render(request, 'diary-write.html')
+
 
 # ------------------------------
 # 5. 분석 리포트 TODO : 지우
@@ -482,9 +469,6 @@ def check_username(request):
     return JsonResponse({'exists': exists})
 
 
-
-
-
 # 로그인
 def login_view(request):
     if request.method == 'POST':
@@ -519,6 +503,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from datetime import datetime
+
 
 @login_required
 def mypage(request):
@@ -564,4 +549,3 @@ def mypage(request):
         return redirect('login')  # 비밀번호 변경 가능성이 있으므로 로그인 페이지로 리다이렉트
 
     return render(request, 'mypage.html')
-
