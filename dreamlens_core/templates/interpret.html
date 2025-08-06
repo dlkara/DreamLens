@@ -41,7 +41,7 @@
                                 rows="6"
                                 placeholder="돌아가신 할머니가 환하게 웃으며 돈을 주셨어요."
                                 required
-                            >{{ original_dream }}</textarea>
+                            >{{ dream }}</textarea>
                         </div>
                         <button type="submit" class="btn btn-primary btn-large btn-full">
                             <span class="btn-icon">🔮</span>
@@ -109,8 +109,7 @@
                     {% if user.is_authenticated %}
                     <form action="{% url 'diary_write' %}" method="POST" class="action-form">
                         {% csrf_token %}
-                        <input type="hidden" name="dream_content" value="{{ original_dream }}">
-                        <input type="hidden" name="interpretation_result" value="{{ interpretation_result }}">
+                        <input type="hidden" name="interpret_pk" value="{{ interpret_pk }}"/>
                         <button type="submit" class="btn btn-primary btn-large">
                             <span class="btn-icon">📖</span>
                             내 일기장에 추가

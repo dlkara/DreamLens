@@ -400,8 +400,8 @@ def diary_list(request, yyyymm=None):
     return render(request, 'diary-list.html', context)
 
 
-def diary_detail(request, year, month, day):
-    render(request, 'diary-detail.html')
+def diary_detail(request, pk):
+    return render(request, 'diary-detail.html')
 
 
 def diary_write(request):
