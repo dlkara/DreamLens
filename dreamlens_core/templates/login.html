@@ -1,20 +1,85 @@
-{% include 'header.html' %}
+{% load static %}
 
-<form method="post">
-  {% csrf_token %}
-  <input type="text" name="username" placeholder="아이디">
-  <input type="password" name="password" placeholder="비밀번호">
-  <button type="submit">로그인하기</button>
-</form>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>로그인 - DreamLens</title>
+    <link rel="stylesheet" href="{% static 'css/common.css' %}">
+</head>
+<body>
+    {% include 'header.html' %}
 
-{<!-- ✅ 메시지 구분 출력 -->
-{% if messages %}
-  {% for message in messages %}
-    {% if 'signup' in message.extra_tags %}
-      <p style="color:green;">{{ message }}</p>
-    {% elif message.tags == 'error' %}
-      <p style="color:red;">{{ message }}</p>
-    {% endif %}
-  {% endfor %}
-{% endif %}
-{% include 'footer.html' %}
+    <main class="main-container">
+        <div class="form-section">
+            <div class="form-header">
+                <h1 class="form-title">로그인</h1>
+                <p class="form-subtitle">꿈의 세계로 들어오세요!</p>
+            </div>
+
+            <form method="post" class="login-form">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label for="username" class="form-label">아이디</label>
+                    <input
+                        type="text"
+                        id="username"
+                        name="username"
+                        placeholder="아이디를 입력하세요"
+                        class="form-input"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="password" class="form-label">비밀번호</label>
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        placeholder="비밀번호를 입력하세요"
+                        class="form-input"
+                        required
+                    >
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-large btn-full">
+                    <span class="btn-icon">🔑</span>
+                    로그인하기
+                </button>
+            </form>
+
+            <!-- 메시지 출력 -->
+            {% if messages %}
+                <div class="messages-container">
+                    {% for message in messages %}
+                        {% if 'signup' in message.extra_tags %}
+                            <div class="message message-success">
+                                <span class="message-icon">✅</span>
+                                <span class="message-text">{{ message }}</span>
+                            </div>
+                        {% elif message.tags == 'error' %}
+                            <div class="message message-error">
+                                <span class="message-icon">❌</span>
+                                <span class="message-text">{{ message }}</span>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="form-footer">
+                <p class="footer-text">
+                    아직 계정이 없으신가요?
+                    <a href="{% url 'register_user' %}" class="footer-link">회원가입</a>
+                </p>
+            </div>
+        </div>
+    </main>
+
+    {% include 'footer.html' %}
+
+    <script src="{% static 'js/header.js' %}"></script>
+</body>
+</html>
