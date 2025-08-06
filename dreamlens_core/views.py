@@ -1,21 +1,31 @@
 import os
 import openai
 import json
+import faiss
+import numpy as np
 from pathlib import Path
+
+import calendar
+from datetime import date
+from datetime import datetime
+from django.utils import timezone
+from dateutil.relativedelta import relativedelta
+
 from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import render
-from .models import DreamDict
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-import faiss
-import numpy as np
 
-from django.contrib.auth import get_user_model  # ✅ 현재 설정된 User 모델 반환
-
+from django.contrib.auth import get_user_model  # 현재 설정된 User 모델 반환
 User = get_user_model()
+
+from .models import DreamDict
+from .models import Diary
+from .forms import MyPageForm
+
 
 # ------------------------------
 # 0. 공통 설정
@@ -320,17 +330,6 @@ def dream_combiner(request):
 # ------------------------------
 # 4. 꿈 일기장  TODO : 현정, 지우
 # ------------------------------
-
-import calendar
-from datetime import date
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
-from django.utils import timezone
-from dateutil.relativedelta import relativedelta
-
-from .models import Diary
-
-
 @login_required
 def diary_list(request, yyyymm=None):
     # 1) 파라미터가 없으면 오늘 기준으로 redirect
@@ -413,19 +412,7 @@ def report(request):
 # 6. 로그인/회원가입/마이페이지
 # ------------------------------
 
-# 로그인, 회원가입 - 안주경
-from django.contrib.auth import get_user_model
-from django.shortcuts import render, redirect
-from django.contrib import messages
-
-User = get_user_model()
-
-from datetime import datetime
-from django.contrib import messages
-from django.shortcuts import render, redirect
-from django.http import JsonResponse
-
-
+# 로그인, 회원가입
 def register_view(request):
     if request.method == "POST":
         username = request.POST['username']
@@ -443,7 +430,7 @@ def register_view(request):
             messages.error(request, "비밀번호가 일치하지 않습니다")
             return redirect('register_user')
 
-        # ✅ 닉네임을 별도로 저장
+        # 닉네임을 별도로 저장
         user = User.objects.create_user(username=username, password=password)
         user.nickname = nickname
         if birth:
@@ -491,20 +478,6 @@ def logout_view(request):
 
 
 # 마이페이지
-from .forms import MyPageForm
-
-# accounts/views.py
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from django.shortcuts import render, redirect
-from datetime import datetime
-
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from django.shortcuts import render, redirect
-from datetime import datetime
-
-
 @login_required
 def mypage(request):
     user = request.user
@@ -516,12 +489,12 @@ def mypage(request):
         birth_raw = request.POST.get('birth', '')  # 입력 이름 'birth'로 통일
         gender = request.POST.get('gender', '')
 
-        # ✅ 닉네임 필수
+        # 닉네임 필수
         if not nickname:
             messages.error(request, "닉네임은 필수입니다.")
             return redirect('mypage')
 
-        # ✅ 비밀번호 변경 시 입력값 확인
+        # 비밀번호 변경 시 입력값 확인
         if password or password2:
             if password != password2:
                 messages.error(request, "비밀번호가 일치하지 않습니다.")
@@ -529,7 +502,7 @@ def mypage(request):
             else:
                 user.set_password(password)
 
-        # ✅ 생년월일 선택 사항 처리
+        # 생년월일 선택 사항 처리
         if birth_raw:
             try:
                 user.birth = datetime.strptime(birth_raw, "%Y-%m-%d").date()
@@ -540,7 +513,7 @@ def mypage(request):
         else:
             user.birth = None  # 입력 안 했으면 비움
 
-        # ✅ 나머지 필드 업데이트
+        # 나머지 필드 업데이트
         user.nickname = nickname
         user.gender = gender
         user.save()
