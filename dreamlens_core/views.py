@@ -14,7 +14,6 @@ from dateutil.relativedelta import relativedelta
 
 from django.conf import settings
 from django.http import JsonResponse
-from django.shortcuts import render
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
@@ -339,7 +338,7 @@ def dream_combiner(request):
 # ------------------------------
 @login_required
 def diary_list(request, yyyymm=None):
-    # 1) 파라미터 없으면 오늘 기준으로 리다이렉트
+    # 1) 파라미터 없으면 오늘 기준 리다이렉트
     if yyyymm is None:
         today = timezone.localdate()
         return redirect('diary_list', yyyymm=today.year * 100 + today.month)
@@ -359,67 +358,51 @@ def diary_list(request, yyyymm=None):
     prev_yyyymm = prev_dt.year * 100 + prev_dt.month
     next_yyyymm = next_dt.year * 100 + next_dt.month
 
-    # 5) KST 기준 이번 달 시작·종료를 UTC-aware로 계산
-    tz = timezone.get_current_timezone()  # Asia/Seoul
-
-    start_naive = datetime(year, month, 1, 0, 0)
-    start_local = timezone.make_aware(start_naive, tz)
-
+    # 5) KST → UTC 필터링
+    tz = timezone.get_current_timezone()
+    start_local = timezone.make_aware(datetime(year, month, 1, 0, 0), tz)
     if month == 12:
         ny, nm = year + 1, 1
     else:
         ny, nm = year, month + 1
+    end_local = timezone.make_aware(datetime(ny, nm, 1, 0, 0), tz)
 
-    end_naive = datetime(ny, nm, 1, 0, 0)
-    end_local = timezone.make_aware(end_naive, tz)
-
-    start_utc = start_local.astimezone(pytz.UTC)
-    end_utc = end_local.astimezone(pytz.UTC)
-
-    # 6) 해당 기간의 일기 조회
     qs = Diary.objects.filter(
         user=request.user,
-        date__gte=start_utc,
-        date__lt=end_utc,
+        date__gte=start_local.astimezone(pytz.UTC),
+        date__lt=end_local.astimezone(pytz.UTC),
     )
 
-    # 7) 일자별 PK 및 감정 매핑
+    # 6) 일자별 PK & dream_type 매핑
     day_info = {}
     for entry in qs:
         d = timezone.localtime(entry.date).day
         day_info[d] = {
             'pk': entry.pk,
-            'emotion': entry.emotion_id
+            'dream_type': entry.dream_type_id,  # <-- 여기 키 이름을 dream_type 으로!
         }
 
-    # 8) 달력용 2D 셀 배열 생성 (일요일 시작)
+    # 7) 달력용 2D 셀 생성
     cal = calendar.Calendar(firstweekday=6)
     raw_weeks = cal.monthdayscalendar(year, month)
-
     month_days = []
     for week in raw_weeks:
         row = []
         for day in week:
             if day == 0:
-                row.append({
-                    'day': None,
-                    'pk': None,
-                    'is_good': False,
-                    'is_bad': False,
-                    'is_normal': False,
-                })
+                row.append({'day': None, 'pk': None,
+                            'is_good': False, 'is_bad': False, 'is_normal': False})
             else:
                 info = day_info.get(day)
                 if info:
                     pk = info['pk']
-                    emo = info['emotion']
-                    is_good = emo in [4, 5]
-                    is_bad = emo in [1, 2]
+                    t = info['dream_type']  # <-- 똑같이 dream_type 으로 꺼내고
+                    is_good = (t == 1)  # == 로 비교
+                    is_bad = (t == 2)
                     is_normal = not (is_good or is_bad)
                 else:
                     pk = None
-                    is_good = is_bad = False
-                    is_normal = False
+                    is_good = is_bad = is_normal = False
 
                 row.append({
                     'day': day,
@@ -430,7 +413,7 @@ def diary_list(request, yyyymm=None):
                 })
         month_days.append(row)
 
-    # 9) 컨텍스트 전달
+    # 8) context 정의
     context = {
         'year': year,
         'month': month,
@@ -439,6 +422,7 @@ def diary_list(request, yyyymm=None):
         'prev_yyyymm': prev_yyyymm,
         'next_yyyymm': next_yyyymm,
     }
+
     return render(request, 'diary-list.html', context)
 
 
