@@ -345,7 +345,7 @@ def diary_list(request, yyyymm=None):
         return redirect('diary_list', yyyymm=today.year * 100 + today.month)
 
     # 2) 연·월 분해
-    year  = yyyymm // 100
+    year = yyyymm // 100
     month = yyyymm % 100
 
     # 3) 오늘 하이라이트용
@@ -354,10 +354,10 @@ def diary_list(request, yyyymm=None):
 
     # 4) 이전/다음 달 계산
     first_of_month = date(year, month, 1)
-    prev_dt        = first_of_month - relativedelta(months=1)
-    next_dt        = first_of_month + relativedelta(months=1)
-    prev_yyyymm    = prev_dt.year * 100 + prev_dt.month
-    next_yyyymm    = next_dt.year * 100 + next_dt.month
+    prev_dt = first_of_month - relativedelta(months=1)
+    next_dt = first_of_month + relativedelta(months=1)
+    prev_yyyymm = prev_dt.year * 100 + prev_dt.month
+    next_yyyymm = next_dt.year * 100 + next_dt.month
 
     # 5) KST 기준 월초/다음월초를 UTC-aware로 계산
     tz = timezone.get_current_timezone()
@@ -368,13 +368,13 @@ def diary_list(request, yyyymm=None):
         ny, nm = year, month + 1
     end_local = timezone.make_aware(datetime(ny, nm, 1, 0, 0), tz)
     start_utc = start_local.astimezone(pytz.UTC)
-    end_utc   = end_local.astimezone(pytz.UTC)
+    end_utc = end_local.astimezone(pytz.UTC)
 
     # 6) 해당 기간의 일기 조회 (pk 오름차순)
     qs = Diary.objects.filter(
         user=request.user,
         date__gte=start_utc,
-        date__lt = end_utc,
+        date__lt=end_utc,
     ).order_by('pk')
 
     # 7) 날짜별 색상용 정보(day_info)와 모달용 엔트리(entries_by_day) 수집
@@ -386,17 +386,17 @@ def diary_list(request, yyyymm=None):
         # 첫 번째(=가장 작은 pk) 일기로만 색상 정보 등록
         if d not in day_info:
             day_info[d] = {
-                'pk':         entry.pk,
+                'pk': entry.pk,
                 'dream_type': entry.dream_type_id,
             }
 
         # 모달용: interpretation.input_text 앞 20자 잘라서 title로 사용
         interp = getattr(entry, 'interpretation', None)
-        raw    = interp.input_text if interp else ''
+        raw = interp.input_text if interp else ''
         snippet = raw[:20] + '…' if len(raw) > 20 else raw
 
         entries_by_day[d].append({
-            'pk':    entry.pk,
+            'pk': entry.pk,
             'title': snippet,
         })
 
@@ -411,43 +411,43 @@ def diary_list(request, yyyymm=None):
             if day == 0:
                 # 빈 칸
                 row.append({
-                    'day':       None,
-                    'pk':        None,
-                    'is_good':   False,
-                    'is_bad':    False,
+                    'day': None,
+                    'pk': None,
+                    'is_good': False,
+                    'is_bad': False,
                     'is_normal': False,
                 })
             else:
                 info = day_info.get(day)
                 if info:
-                    pk      = info['pk']
-                    t       = info['dream_type']
+                    pk = info['pk']
+                    t = info['dream_type']
                     is_good = (t == 1)
-                    is_bad  = (t == 2)
+                    is_bad = (t == 2)
                     is_normal = not (is_good or is_bad)
                 else:
-                    pk        = None
-                    is_good   = False
-                    is_bad    = False
+                    pk = None
+                    is_good = False
+                    is_bad = False
                     is_normal = False
 
                 row.append({
-                    'day':       day,
-                    'pk':        pk,
-                    'is_good':   is_good,
-                    'is_bad':    is_bad,
+                    'day': day,
+                    'pk': pk,
+                    'is_good': is_good,
+                    'is_bad': is_bad,
                     'is_normal': is_normal,
                 })
         month_days.append(row)
 
     # 9) 컨텍스트에 JSON 직렬화된 entries_by_day 포함
     context = {
-        'year':                year,
-        'month':               month,
-        'today_day':           today_day,
-        'month_days':          month_days,
-        'prev_yyyymm':         prev_yyyymm,
-        'next_yyyymm':         next_yyyymm,
+        'year': year,
+        'month': month,
+        'today_day': today_day,
+        'month_days': month_days,
+        'prev_yyyymm': prev_yyyymm,
+        'next_yyyymm': next_yyyymm,
         'entries_by_day_json': json.dumps(entries_by_day),
     }
 
