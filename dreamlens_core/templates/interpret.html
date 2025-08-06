@@ -47,47 +47,48 @@
 <body>
 {% include 'header.html' %}
 
-    <!-- 로딩 스피너 -->
-    <div class="spinner-container" id="loadingSpinner">
-        <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
-        </div>
-        <p class="ms-3 mb-0">AI가 꿈을 분석하고 있습니다...</p>
+<!-- 로딩 스피너 -->
+<div class="spinner-container" id="loadingSpinner">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="ms-3 mb-0">AI가 꿈을 분석하고 있습니다...</p>
+</div>
+
+<div class="container my-5">
+    <div class="text-center mb-4">
+        <h1 class="display-4">🔮 DreamLens</h1>
+        <p class="lead">당신의 무의식이 보낸 편지를 함께 열어볼까요?</p>
     </div>
 
-    <div class="container my-5">
-        <div class="text-center mb-4">
-            <h1 class="display-4">🔮 DreamLens</h1>
-            <p class="lead">당신의 무의식이 보낸 편지를 함께 열어볼까요?</p>
+    <div class="card">
+        <div class="card-body p-4">
+            <!-- 꿈 입력 폼 -->
+            <form id="dreamForm" method="POST" action="{% url 'dream_interpreter' %}">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="dream_content" class="form-label fs-5">어떤 꿈을 꾸셨나요?</label>
+                    <textarea class="form-control" id="dream_content" name="input_text" rows="6"
+                              placeholder="돌아가신 할머니가 환하게 웃으며 돈을 주셨어요." required>{{ dream }}</textarea>
+                </div>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary btn-lg">해몽하기</button>
+                </div>
+            </form>
         </div>
+    </div>
 
-        <div class="card">
-            <div class="card-body p-4">
-                <!-- 꿈 입력 폼 -->
-                <form id="dreamForm" method="POST" action="{% url 'dream_interpreter' %}">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="dream_content" class="form-label fs-5">어떤 꿈을 꾸셨나요?</label>
-                        <textarea class="form-control" id="dream_content" name="input_text" rows="6" placeholder="돌아가신 할머니가 환하게 웃으며 돈을 주셨어요." required>{{ original_dream }}</textarea>
-                    </div>
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary btn-lg">해몽하기</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- 해몽 결과 표시 영역 -->
-        {% if interpretation_result %}
+    <!-- 해몽 결과 표시 영역 -->
+    {% if interpretation_result %}
         <div class="mt-5">
             <!-- 1. 꿈 종류 분석 -->
             {% if classification_result %}
-            <div class="card mb-4">
-                <div class="card-header fs-5">📊 AI가 분석한 나의 꿈 종류</div>
-                <div class="card-body result-section">
-                    <p class="card-text text-success fw-bold">{{ classification_result }}</p>
+                <div class="card mb-4">
+                    <div class="card-header fs-5">📊 AI가 분석한 나의 꿈 종류</div>
+                    <div class="card-body result-section">
+                        <p class="card-text text-success fw-bold">{{ classification_result }}</p>
+                    </div>
                 </div>
-            </div>
             {% endif %}
 
             <!-- 2. 상세 해몽 -->
@@ -100,43 +101,44 @@
 
             <!-- 3. 핵심 키워드 -->
             {% if keywords_result %}
-            <div class="card mb-4">
-                <div class="card-header fs-5">🔑 꿈의 핵심 키워드</div>
-                <div class="card-body result-section">
-                    <p class="card-text text-info">{{ keywords_result }}</p>
+                <div class="card mb-4">
+                    <div class="card-header fs-5">🔑 꿈의 핵심 키워드</div>
+                    <div class="card-body result-section">
+                        <p class="card-text text-info">{{ keywords_result }}</p>
+                    </div>
                 </div>
-            </div>
             {% endif %}
 
             <!-- 4. 세 줄 요약 -->
             {% if summary_result %}
-            <div class="card mb-4">
-                <div class="card-header fs-5">✨ 세 줄 요약</div>
-                <div class="card-body result-section">
-                    <p class="card-text">{{ summary_result }}</p>
+                <div class="card mb-4">
+                    <div class="card-header fs-5">✨ 세 줄 요약</div>
+                    <div class="card-body result-section">
+                        <p class="card-text">{{ summary_result }}</p>
+                    </div>
                 </div>
+            {% endif %}
+
+            <div class="d-grid gap-3 mb-4">
+
+                <!-- ✅ 일기장 추가 버튼 -->
+                {% if user.is_authenticated %}
+                    <form action="{% url 'diary_write' %}" method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="interpret_pk" value="{{ interpret_pk }}"/>
+{#                        <textarea name="interpretation" style="display: none;">{{ interpretation_result }}</textarea>#}
+{#                        <textarea name="keywords" style="display: none;">{{ keywords_result }}</textarea>#}
+                        <button type="submit" class="btn btn-primary btn-lg">내 일기장에 추가</button>
+                    </form>
+                {% else %}
+                    <button class="btn btn-primary btn-lg" onclick="redirectToLogin()">내 일기장에 추가</button>
+                {% endif %}
+
+                <!-- 공유하기 버튼 -->
+                <button onclick="openShareModal()" class="btn btn-secondary btn-lg">공유하기</button>
+
             </div>
-            {% endif %}
-
-        <div class="d-grid gap-3 mb-4">
-
-            <!-- ✅ 일기장 추가 버튼 -->
-            {% if user.is_authenticated %}
-            <form action="{% url 'diary_write' %}" method="POST">
-                {% csrf_token %}
-                <input type="hidden" name="dream_content" value="{{ original_dream }}">
-                <input type="hidden" name="interpretation_result" value="{{ interpretation_result }}">
-                <button type="submit" class="btn btn-primary btn-lg">내 일기장에 추가</button>
-            </form>
-            {% else %}
-            <button class="btn btn-primary btn-lg" onclick="redirectToLogin()">내 일기장에 추가</button>
-            {% endif %}
-
-            <!-- 공유하기 버튼 -->
-            <button onclick="openShareModal()" class="btn btn-secondary btn-lg">공유하기</button>
-
         </div>
-    </div>
     {% endif %}
 
     <!-- 오류 메시지 표시 영역 -->
@@ -172,7 +174,8 @@
     <div id="clipboardToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="d-flex">
             <div class="toast-body">✅ 클립보드에 복사되었습니다!</div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                    aria-label="Close"></button>
         </div>
     </div>
 </div>

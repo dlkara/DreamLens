@@ -12,6 +12,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 import faiss
 import numpy as np
+from dreamlens_core.models import Interpretation
 
 from django.contrib.auth import get_user_model  # ✅ 현재 설정된 User 모델 반환
 
@@ -158,10 +159,19 @@ def dream_interpreter(request):
                 context['keywords_result'] = keywords_part.strip()
                 context['summary_result'] = summary_part.strip().replace('`', "")
 
-                # print(classification_part.strip())
-                # print(interpretation_part.strip())
-                # print(keywords_part.strip())
-                # print(summary_part.strip())
+                # 로그인한 사용자일 시, 해몽로그를 DB 에 저장하고 해당 로그의 pk를 session 에 저장
+                # 세션에 저장된 pk로 찾아서 일기장 작성에 뿌려준다.
+                if request.user.is_authenticated:
+                    interpretation = Interpretation(
+                        user=request.user,
+                        input_text=dream,
+                        result=context['interpretation_result'],
+                        keywords=context['keywords_result'],
+                        summary=context['summary_result'],
+                    )
+
+                    interpretation.save()
+                    context['interpret_pk'] = interpretation.pk
 
             except ValueError:
                 # LLM이 형식에 맞지 않게 답변했을 경우를 대비한 예외 처리
@@ -176,10 +186,6 @@ def dream_interpreter(request):
 
         return render(request, 'interpret.html', context)
 
-    # TODO: 로그인과 비로그인 따라 구분하기
-    # 비로그인 사용자
-
-    # 로그인 사용자
 
 
 # ------------------------------
@@ -409,8 +415,31 @@ def diary_detail(request, year, month, day):
     render(request, 'diary-detail.html')
 
 def diary_write(request):
-    return render(request, 'diary-write.html')
+    if request.method == "GET":
+        return render(request, "inaccessible.html")
+        # form = DiaryForm()
+        # return render(request, 'diary-write.html', {
+        #     'form': form,
+        # })
 
+    elif request.method == "POST":
+        context = {}
+        context['interpretation'] = Interpretation.objects.get(pk=request.POST['interpret_pk'])
+        context['form'] = DiaryForm()
+
+        return render(request, "diary-write.html", context)
+
+
+def diary_writeOk(request):
+    if request.method == 'POST':
+        form = DiaryForm(request.POST)
+        if form.is_valid():
+            diary = form.save(commit=False)
+            diary.user = request.user
+            diary.interpretation = Interpretation.objects.get(pk=request.POST['interpret_pk'])
+            diary.save()
+
+            return render(request, 'diary-writeOk.html', {'pk': diary.pk})
 # ------------------------------
 # 5. 분석 리포트 TODO : 지우
 # ------------------------------
@@ -503,7 +532,7 @@ def logout_view(request):
 
 
 # 마이페이지
-from .forms import MyPageForm
+from .forms import MyPageForm, DiaryForm
 
 # accounts/views.py
 from django.contrib.auth.decorators import login_required
