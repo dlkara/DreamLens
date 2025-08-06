@@ -33,16 +33,20 @@
         <tbody>
         {% for week in month_days %}
         <tr>
-            {% for day in week %}
-            {% if day %}
-            <td class="{% if day == today_day %}today{% endif %}
-                               {% if day in good_days %}good{% elif day in bad_days %}bad{% elif day in normal_days %}normal{% endif %}">
-                {% if day in good_days or day in bad_days or day in normal_days %}
-                <a href="{% url 'diary-detail' year=year month=month day=day %}">
-                    {{ day }}
+            {% for cell in week %}
+            {% if cell.day %}
+            <td class="
+                            {% if cell.day == today_day %}today{% endif %}
+                            {% if cell.is_good %} good
+                            {% elif cell.is_bad %} bad
+                            {% elif cell.is_normal %} normal
+                            {% endif %}">
+                {% if cell.pk %}
+                <a href="{% url 'diary_detail' pk=cell.pk %}">
+                    {{ cell.day }}
                 </a>
                 {% else %}
-                {{ day }}
+                {{ cell.day }}
                 {% endif %}
             </td>
             {% else %}

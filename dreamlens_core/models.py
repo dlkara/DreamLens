@@ -116,7 +116,7 @@ class Emotion(models.Model):
         verbose_name_plural = "감정 목록"
 
     def __str__(self):
-        return self.name
+        return f"{self.icon} {self.name}"
 
 
 # ----------------------------------------------------------------
@@ -133,7 +133,14 @@ class DreamType(models.Model):
         verbose_name_plural = "꿈 유형 목록"
 
     def __str__(self):
-        return self.type
+        # ⭐️ 핵심: DB 값을 원하는 한글로 변환하여 반환
+        if self.type == 'good':
+            return '길몽'
+        elif self.type == 'bad':
+            return '흉몽'
+        elif self.type == 'normal':
+            return '일반몽'
+        return self.type # 혹시 다른 값이 있을 경우를 대비
 
 
 # ----------------------------------------------------------------

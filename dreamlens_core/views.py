@@ -1,21 +1,34 @@
 import os
 import openai
 import json
+import faiss
+import numpy as np
 from pathlib import Path
+import pytz
+
+import calendar
+from datetime import date
+from datetime import datetime
+from django.utils import timezone
+from dateutil.relativedelta import relativedelta
+
 from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import render
-from .models import DreamDict
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-import faiss
-import numpy as np
+from dreamlens_core.models import Interpretation
+from .forms import DiaryForm
 
-from django.contrib.auth import get_user_model  # ✅ 현재 설정된 User 모델 반환
+from django.contrib.auth import get_user_model  # 현재 설정된 User 모델 반환
 
 User = get_user_model()
+
+from .models import DreamDict
+from .models import Diary
+from .forms import MyPageForm
 
 # ------------------------------
 # 0. 공통 설정
@@ -83,33 +96,33 @@ def generate_llm_response(user_dream, retrieved_data, categories_data):
     reference_section = "\n\n".join(reference_texts)
 
     prompt = f"""
-당신은 꿈 해몽과 분류에 매우 능숙한 AI 전문가입니다. 당신의 임무는 아래 정보를 바탕으로 사용자의 꿈을 분석하고, 네 부분으로 구성된 답변을 생성하는 것입니다.
-
----
-[분류 기준 정보]
-- 가능한 대분류: {categories_data['대분류']}
-- 가능한 소분류: {categories_data['소분류']}
-
-[해몽 참고 정보]
-- 유사한 꿈 데이터베이스:
-{reference_section}
----
-[사용자 꿈 이야기]:
-{user_dream}
----
-[작업 지침 및 출력 형식]:
-당신은 반드시 아래 4개의 부분으로 구성된 답변을 생성해야 합니다.
-각 부분은 지정된 구분자로 시작해야 합니다.
-**절대로, 절대로 각 부분에 제목이나 번호(예: "2. 상세 해몽:")를 붙이지 마세요. 오직 내용만 작성해야 합니다.**
-
-- **첫 번째 부분**: `[분류시작]`으로 시작합니다. [분류 기준 정보]를 참고하여 "대분류: [선택]\n소분류: [선택]" 형식으로 꿈을 분류하세요. 일치하는 것이 없으면 "대분류: 해당 없음\n소분류: 해당 없음" 이라고 적으세요.
-
-- **두 번째 부분**: `[해몽시작]`으로 시작합니다. "사용자님의 꿈을 자세히 살펴보니..." 와 같이 친근한 말투로 시작하여 상세한 해몽과 따뜻한 조언을 작성하세요.
-
-- **세 번째 부분**: `[키워드추출]`으로 시작합니다. 꿈의 의미를 압축하는 핵심 명사 키워드 3개를 쉼표(,)로 구분해서 나열하세요.
-
-- **네 번째 부분**: `[요약시작]`으로 시작합니다. 상세 해몽의 내용을 세 개의 문장으로 요약합니다.
-"""
+    당신은 꿈 해몽과 분류에 매우 능숙한 AI 전문가입니다. 당신의 임무는 아래 정보를 바탕으로 사용자의 꿈을 분석하고, 네 부분으로 구성된 답변을 생성하는 것입니다.
+    
+    ---
+    [분류 기준 정보]
+    - 가능한 대분류: {categories_data['대분류']}
+    - 가능한 소분류: {categories_data['소분류']}
+    
+    [해몽 참고 정보]
+    - 유사한 꿈 데이터베이스:
+    {reference_section}
+    ---
+    [사용자 꿈 이야기]:
+    {user_dream}
+    ---
+    [작업 지침 및 출력 형식]:
+    당신은 반드시 아래 4개의 부분으로 구성된 답변을 생성해야 합니다.
+    각 부분은 지정된 구분자로 시작해야 합니다.
+    **절대로, 절대로 각 부분에 제목이나 번호(예: "2. 상세 해몽:")를 붙이지 마세요. 오직 내용만 작성해야 합니다.**
+    
+    - **첫 번째 부분**: `[분류시작]`으로 시작합니다. [분류 기준 정보]를 참고하여 "대분류: [선택]\n소분류: [선택]" 형식으로 꿈을 분류하세요. 일치하는 것이 없으면 "대분류: 해당 없음\n소분류: 해당 없음" 이라고 적으세요.
+    
+    - **두 번째 부분**: `[해몽시작]`으로 시작합니다. "사용자님의 꿈을 자세히 살펴보니..." 와 같이 친근한 말투로 시작하여 상세한 해몽과 따뜻한 조언을 작성하세요.
+    
+    - **세 번째 부분**: `[키워드추출]`으로 시작합니다. 꿈의 의미를 압축하는 핵심 명사 키워드 3개를 쉼표(,)로 구분해서 나열하세요.
+    
+    - **네 번째 부분**: `[요약시작]`으로 시작합니다. 상세 해몽의 내용을 세 개의 문장으로 요약합니다.
+    """
     try:
         response = openai.chat.completions.create(
             model="gpt-4o",
@@ -158,10 +171,19 @@ def dream_interpreter(request):
                 context['keywords_result'] = keywords_part.strip()
                 context['summary_result'] = summary_part.strip().replace('`', "")
 
-                # print(classification_part.strip())
-                # print(interpretation_part.strip())
-                # print(keywords_part.strip())
-                # print(summary_part.strip())
+                # 로그인한 사용자일 시, 해몽로그를 DB 에 저장하고 해당 로그의 pk를 session 에 저장
+                # 세션에 저장된 pk로 찾아서 일기장 작성에 뿌려준다.
+                if request.user.is_authenticated:
+                    interpretation = Interpretation(
+                        user=request.user,
+                        input_text=dream,
+                        result=context['interpretation_result'],
+                        keywords=context['keywords_result'],
+                        summary=context['summary_result'],
+                    )
+
+                    interpretation.save()
+                    context['interpret_pk'] = interpretation.pk
 
             except ValueError:
                 # LLM이 형식에 맞지 않게 답변했을 경우를 대비한 예외 처리
@@ -175,11 +197,6 @@ def dream_interpreter(request):
                 context['error'] = "해몽 데이터베이스를 불러올 수 없습니다. 관리자에게 문의하세요."
 
         return render(request, 'interpret.html', context)
-
-    # TODO: 로그인과 비로그인 따라 구분하기
-    # 비로그인 사용자
-
-    # 로그인 사용자
 
 
 # ------------------------------
@@ -320,24 +337,12 @@ def dream_combiner(request):
 # ------------------------------
 # 4. 꿈 일기장  TODO : 현정, 지우
 # ------------------------------
-
-import calendar
-from datetime import date
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
-from django.utils import timezone
-from dateutil.relativedelta import relativedelta
-
-from .models import Diary
-
-
 @login_required
 def diary_list(request, yyyymm=None):
-    # 1) 파라미터가 없으면 오늘 기준으로 redirect
+    # 1) 파라미터 없으면 오늘 기준으로 리다이렉트
     if yyyymm is None:
         today = timezone.localdate()
-        yyyymm = today.year * 100 + today.month
-        return redirect('diary_list', yyyymm=yyyymm)
+        return redirect('diary_list', yyyymm=today.year * 100 + today.month)
 
     # 2) 연·월 분해
     year = yyyymm // 100
@@ -349,57 +354,124 @@ def diary_list(request, yyyymm=None):
 
     # 4) 이전/다음 달 계산
     first_of_month = date(year, month, 1)
-    prev_month_dt = first_of_month - relativedelta(months=1)
-    next_month_dt = first_of_month + relativedelta(months=1)
-    prev_yyyymm = prev_month_dt.year * 100 + prev_month_dt.month
-    next_yyyymm = next_month_dt.year * 100 + next_month_dt.month
+    prev_dt = first_of_month - relativedelta(months=1)
+    next_dt = first_of_month + relativedelta(months=1)
+    prev_yyyymm = prev_dt.year * 100 + prev_dt.month
+    next_yyyymm = next_dt.year * 100 + next_dt.month
 
-    # 5) Python calendar 모듈로 “주별 7칸” 배열 생성 (일요일 시작)
-    cal = calendar.Calendar(firstweekday=6)  # 6 = Sunday
-    raw_weeks = cal.monthdayscalendar(year, month)
-    # raw_weeks: [[0, 0, 0, 0, 0, 1, 2], [3, 4, 5, ...], ...]
-    month_days = [
-        [day if day != 0 else None for day in week]
-        for week in raw_weeks
-    ]
+    # 5) KST 기준 이번 달 시작·종료를 UTC-aware로 계산
+    tz = timezone.get_current_timezone()  # Asia/Seoul
 
-    # 6) 이 user, 이 연·월의 Diary 쿼리
+    start_naive = datetime(year, month, 1, 0, 0)
+    start_local = timezone.make_aware(start_naive, tz)
+
+    if month == 12:
+        ny, nm = year + 1, 1
+    else:
+        ny, nm = year, month + 1
+
+    end_naive = datetime(ny, nm, 1, 0, 0)
+    end_local = timezone.make_aware(end_naive, tz)
+
+    start_utc = start_local.astimezone(pytz.UTC)
+    end_utc = end_local.astimezone(pytz.UTC)
+
+    # 6) 해당 기간의 일기 조회
     qs = Diary.objects.filter(
         user=request.user,
-        date__year=year,
-        date__month=month
+        date__gte=start_utc,
+        date__lt=end_utc,
     )
 
-    # 7) 감정별 날짜 세트로 분리
-    days = set(qs.values_list('date__day', flat=True))
-    good_days = set(qs.filter(emotion_id__in=[4, 5])
-                    .values_list('date__day', flat=True))
-    bad_days = set(qs.filter(emotion_id__in=[1, 2])
-                   .values_list('date__day', flat=True))
-    normal_days = days - good_days - bad_days
+    # 7) 일자별 PK 및 감정 매핑
+    day_info = {}
+    for entry in qs:
+        d = timezone.localtime(entry.date).day
+        day_info[d] = {
+            'pk': entry.pk,
+            'emotion': entry.emotion_id
+        }
 
-    # 8) context 전달
+    # 8) 달력용 2D 셀 배열 생성 (일요일 시작)
+    cal = calendar.Calendar(firstweekday=6)
+    raw_weeks = cal.monthdayscalendar(year, month)
+
+    month_days = []
+    for week in raw_weeks:
+        row = []
+        for day in week:
+            if day == 0:
+                row.append({
+                    'day': None,
+                    'pk': None,
+                    'is_good': False,
+                    'is_bad': False,
+                    'is_normal': False,
+                })
+            else:
+                info = day_info.get(day)
+                if info:
+                    pk = info['pk']
+                    emo = info['emotion']
+                    is_good = emo in [4, 5]
+                    is_bad = emo in [1, 2]
+                    is_normal = not (is_good or is_bad)
+                else:
+                    pk = None
+                    is_good = is_bad = False
+                    is_normal = False
+
+                row.append({
+                    'day': day,
+                    'pk': pk,
+                    'is_good': is_good,
+                    'is_bad': is_bad,
+                    'is_normal': is_normal,
+                })
+        month_days.append(row)
+
+    # 9) 컨텍스트 전달
     context = {
         'year': year,
         'month': month,
         'today_day': today_day,
         'month_days': month_days,
-        'good_days': good_days,
-        'bad_days': bad_days,
-        'normal_days': normal_days,
         'prev_yyyymm': prev_yyyymm,
         'next_yyyymm': next_yyyymm,
     }
-
     return render(request, 'diary-list.html', context)
 
 
-def diary_detail(request, year, month, day):
-    render(request, 'diary-detail.html')
+def diary_detail(request, pk):
+    return render(request, 'diary-detail.html')
 
 
 def diary_write(request):
-    return render(request, 'diary-write.html')
+    if request.method == "GET":
+        return render(request, "inaccessible.html")
+        # form = DiaryForm()
+        # return render(request, 'diary-write.html', {
+        #     'form': form,
+        # })
+
+    elif request.method == "POST":
+        context = {}
+        context['interpretation'] = Interpretation.objects.get(pk=request.POST['interpret_pk'])
+        context['form'] = DiaryForm()
+
+        return render(request, "diary-write.html", context)
+
+
+def diary_writeOk(request):
+    if request.method == 'POST':
+        form = DiaryForm(request.POST)
+        if form.is_valid():
+            diary = form.save(commit=False)
+            diary.user = request.user
+            diary.interpretation = Interpretation.objects.get(pk=request.POST['interpret_pk'])
+            diary.save()
+
+            return render(request, 'diary-writeOk.html', {'pk': diary.pk})
 
 
 # ------------------------------
@@ -413,19 +485,7 @@ def report(request):
 # 6. 로그인/회원가입/마이페이지
 # ------------------------------
 
-# 로그인, 회원가입 - 안주경
-from django.contrib.auth import get_user_model
-from django.shortcuts import render, redirect
-from django.contrib import messages
-
-User = get_user_model()
-
-from datetime import datetime
-from django.contrib import messages
-from django.shortcuts import render, redirect
-from django.http import JsonResponse
-
-
+# 로그인, 회원가입
 def register_view(request):
     if request.method == "POST":
         username = request.POST['username']
@@ -443,7 +503,7 @@ def register_view(request):
             messages.error(request, "비밀번호가 일치하지 않습니다")
             return redirect('register_user')
 
-        # ✅ 닉네임을 별도로 저장
+        # 닉네임을 별도로 저장
         user = User.objects.create_user(username=username, password=password)
         user.nickname = nickname
         if birth:
@@ -491,20 +551,6 @@ def logout_view(request):
 
 
 # 마이페이지
-from .forms import MyPageForm
-
-# accounts/views.py
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from django.shortcuts import render, redirect
-from datetime import datetime
-
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from django.shortcuts import render, redirect
-from datetime import datetime
-
-
 @login_required
 def mypage(request):
     user = request.user
@@ -516,12 +562,12 @@ def mypage(request):
         birth_raw = request.POST.get('birth', '')  # 입력 이름 'birth'로 통일
         gender = request.POST.get('gender', '')
 
-        # ✅ 닉네임 필수
+        # 닉네임 필수
         if not nickname:
             messages.error(request, "닉네임은 필수입니다.")
             return redirect('mypage')
 
-        # ✅ 비밀번호 변경 시 입력값 확인
+        # 비밀번호 변경 시 입력값 확인
         if password or password2:
             if password != password2:
                 messages.error(request, "비밀번호가 일치하지 않습니다.")
@@ -529,7 +575,7 @@ def mypage(request):
             else:
                 user.set_password(password)
 
-        # ✅ 생년월일 선택 사항 처리
+        # 생년월일 선택 사항 처리
         if birth_raw:
             try:
                 user.birth = datetime.strptime(birth_raw, "%Y-%m-%d").date()
@@ -540,7 +586,7 @@ def mypage(request):
         else:
             user.birth = None  # 입력 안 했으면 비움
 
-        # ✅ 나머지 필드 업데이트
+        # 나머지 필드 업데이트
         user.nickname = nickname
         user.gender = gender
         user.save()
