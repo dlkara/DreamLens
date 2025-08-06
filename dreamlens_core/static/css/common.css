@@ -1046,10 +1046,53 @@ input[type="date"] {
     -moz-appearance: none;
 }
 
+/* ========== 꿈 조합기 페이지 ========== */
+.combine-page .dream-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.combine-page .form-input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--color-gray-300);
+    border-radius: 10px;
+    font-size: 16px;
+    background-color: var(--color-white);
+    font-family: inherit;
+}
+
+.combine-page .loading-box,
+.combine-page .result-box,
+.combine-page .summary-box {
+    background-color: var(--color-gray-100);
+    border-radius: 10px;
+    padding: 1.2rem;
+    margin-top: 1.5rem;
+    line-height: 1.6;
+    font-size: 15px;
+    white-space: pre-wrap;
+}
+
 /* 폼 그룹 공통 여백 */
 .form-group {
     margin-bottom: 1.5rem;
 }
+
+/* 요약 박스 스타일 */
+.summary-box {
+    text-indent: 0;      /* 전체 들여쓰기 제거 */
+}
+
+.summary-box p {
+    text-indent: 0 !important;
+    margin: 0 !important;
+    padding: 0;
+    line-height: 1.5;
+}
+
 /* ========== 태블릿 스타일 (768px+) ========== */
 @media (min-width: 768px) {
     .interpret-page {
