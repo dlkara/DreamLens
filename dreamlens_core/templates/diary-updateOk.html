@@ -1,0 +1,9 @@
+<script>
+    if (confirm('수정하시겠습니까?')) {
+        alert('수정 성공');
+        location.href = "{% url 'diary_detail' pk %}";
+    }
+    else {
+            history.back();
+        }
+</script>

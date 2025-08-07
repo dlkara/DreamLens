@@ -44,63 +44,76 @@
         history.back();
     </script>
 {% else %}
-<body>
-<div class="container my-5">
-    <div class="text-center mb-4">
-        <!-- date를 한국식 날짜 형식으로 표시 -->
-        <h1 class="display-5 fw-bold">{{ diary.date|date:"Y년 n월 j일" }}의 꿈</h1>
-        <p class="text-muted">기록된 꿈의 조각들</p>
-    </div>
+    <body>
+    {% include 'header.html' %}
+    <div class="container my-5">
+        <div class="text-center mb-4">
+            <!-- date를 한국식 날짜 형식으로 표시 -->
+            <h1 class="display-5 fw-bold">{{ diary.date|date:"Y년 n월 j일" }}의 꿈</h1>
+            <p class="text-muted">기록된 꿈의 조각들</p>
+        </div>
 
-    <div class="card">
-        <div class="card-body p-4 p-md-5">
-            <!-- 꿈 내용 -->
-            <div class="mb-4">
-                <label class="form-label">꿈 내용</label>
-                <div class="readonly-field">{{ diary.interpretation.input_text }}</div>
-            </div>
-
-            <!-- 해몽 결과 -->
-            <div class="mb-4">
-                <label class="form-label">AI 해몽 결과</label>
-                <div class="readonly-field">{{ diary.interpretation.result }}</div>
-            </div>
-
-            <!-- 핵심 키워드 -->
-            <div class="mb-4">
-                <label class="form-label">핵심 키워드</label>
-                <div class="readonly-field text-primary">{{ diary.interpretation.keywords }}</div>
-            </div>
-
-            <hr class="my-4">
-
-            <div class="row g-3">
-                <!-- 꿈 종류 -->
-                <div class="col-md-6">
-                    <label class="form-label">꿈 종류</label>
-                    <div class="readonly-field">{{ diary.dream_type }}</div>
-                </div>
-                <!-- 감정 -->
-                <div class="col-md-6">
-                    <label class="form-label">감정</label>
-                    <div class="readonly-field">{{ diary.emotion }}</div>
-                </div>
-            </div>
-
-            <!-- 버튼 영역 -->
-            <div class="d-flex justify-content-end gap-2 mt-5">
-                <a href="{% url 'diary_list_base' %}" class="btn btn-secondary">목록으로</a>
-                <a href="{% url 'diary_update' diary.pk %}" class="btn btn-outline-primary">수정하기</a>
-                <form action="{% url 'diary_delete' diary.pk %}" method="POST"
-                      onsubmit="return confirm('정말로 이 일기를 삭제하시겠습니까?');">
+        <div class="card">
+            <div class="card-body p-4 p-md-5">
+                <form name="frmDelete" action="{% url 'diary_delete' %}" method="post">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-danger">삭제하기</button>
+                    <input type="hidden" name="pk" value="{{ diary.pk }}"/>
                 </form>
+
+                <!-- 꿈 내용 -->
+                <div class="mb-4">
+                    <label class="form-label">꿈 내용</label>
+                    <div class="readonly-field">{{ diary.interpretation.input_text }}</div>
+                </div>
+
+                <!-- 해몽 결과 -->
+                <div class="mb-4">
+                    <label class="form-label">AI 해몽 결과</label>
+                    <div class="readonly-field">{{ diary.interpretation.result }}</div>
+                </div>
+
+                <!-- 핵심 키워드 -->
+                <div class="mb-4">
+                    <label class="form-label">핵심 키워드</label>
+                    <div class="readonly-field text-primary">{{ diary.interpretation.keywords }}</div>
+                </div>
+
+                <hr class="my-4">
+
+                <div class="row g-3">
+                    <!-- 꿈 종류 -->
+                    <div class="col-md-6">
+                        <label class="form-label">꿈 종류</label>
+                        <div class="readonly-field">{{ diary.dream_type }}</div>
+                    </div>
+                    <!-- 감정 -->
+                    <div class="col-md-6">
+                        <label class="form-label">감정</label>
+                        <div class="readonly-field">{{ diary.emotion }}</div>
+                    </div>
+                </div>
+
+                <!-- 버튼 영역 -->
+                <div class="d-flex justify-content-end gap-2 mt-5">
+                    <a href="{% url 'diary_list_base' %}" class="btn btn-secondary">목록으로</a>
+                    <a href="{% url 'diary_update' diary.pk %}" class="btn btn-outline-primary">수정하기</a>
+                    <button type="submit" class="btn btn-danger" id="btnDel">삭제하기</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-</div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+        $(function () {
+            // 글 [삭제] 버튼
+            $("#btnDel").click(function () {
+                confirm("삭제하시겠습니까?") && $("form[name='frmDelete']").submit();
+            });
+        });
+    </script>
+    {% include 'footer.html' %}
+    </body>
 {% endif %}
 </html>

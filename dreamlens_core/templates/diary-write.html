@@ -56,11 +56,13 @@
                     <!-- 꿈 종류 & 감정 -->
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label for="{{ form.dream_type.id_for_label }}" class="form-label">{{ form.dream_type.label }}</label>
+                            <label for="{{ form.dream_type.id_for_label }}"
+                                   class="form-label">{{ form.dream_type.label }}</label>
                             {{ form.dream_type }}
                         </div>
                         <div class="col-md-6">
-                            <label for="{{ form.emotion.id_for_label }}" class="form-label">{{ form.emotion.label }}</label>
+                            <label for="{{ form.emotion.id_for_label }}"
+                                   class="form-label">{{ form.emotion.label }}</label>
                             {{ form.emotion }}
                         </div>
                     </div>
@@ -87,6 +89,6 @@
         </form>
     </div>
 </div>
-
+{% include 'footer.html' %}
 </body>
 </html>

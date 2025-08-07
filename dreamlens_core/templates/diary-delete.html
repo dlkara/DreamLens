@@ -1,0 +1,15 @@
+{% if result > 0 %}
+    <script>
+        if (confirm('정말 삭제하시겠습니까?')) {
+            alert('삭제 성공');
+            location.href = "{% url 'diary_list_base' %}";
+        } else{
+            history.back();
+        }
+    </script>
+{% else %}
+    <script>
+        alert('삭제 실패');
+        history.back();
+    </script>
+{% endif %}

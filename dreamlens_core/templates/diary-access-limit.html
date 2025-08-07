@@ -1,0 +1,19 @@
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>저장 완료</title>
+</head>
+<body>
+{% if access_limit_message %}
+    <script>
+        alert('{{ access_limit_message }}');
+        history.back();
+    </script>
+{% elif error_message %}
+    <script>
+        alert('{{ error_message }}');
+        history.back();
+    </script>
+{% endif %}
+</body>
+</html>
