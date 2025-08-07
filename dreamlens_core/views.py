@@ -16,7 +16,7 @@ from django.utils import timezone  # Django 시간대 처리용
 from dateutil.relativedelta import relativedelta
 
 from django.conf import settings
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse, Http404
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
@@ -37,12 +37,30 @@ from .forms import MyPageForm
 # 0. 공통 설정
 # ------------------------------
 BASE_DIR = settings.BASE_DIR
-JSON_PATH = BASE_DIR / "data" / "meta_dream.json"
-openai.api_key = os.getenv("OPENAI_API_KEY")
+
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+if OPENAI_API_KEY:
+    openai.api_key = OPENAI_API_KEY
+else:
+    print("❌ .env에 OPENAI_API_KEY가 없습니다.")
 
 
 def index(request):
     return render(request, "main.html")
+
+
+def custom_404(request, exception):
+    # 정적 파일 요청은 완전히 예외 처리
+    if request.path.startswith('/static/') or request.path.startswith('/media/'):
+        raise Http404()  # 반드시 예외 발생시켜야 정적 핸들러가 작동함
+
+    html = """
+        <script>
+            alert("잘못된 접근입니다. 메인 페이지로 이동합니다.");
+            window.location.href = "/";
+        </script>
+    """
+    return HttpResponse(html, status=404)
 
 
 # ------------------------------
@@ -207,8 +225,8 @@ def dream_interpreter(request):
 # ------------------------------
 def dream_dict(request):
     # 1) 원본 JSON 로드
-    json_fp = os.path.join(settings.BASE_DIR, 'data', 'meta_dream.json')
-    with open(json_fp, encoding='utf-8') as f:
+    METADATA_PATH
+    with open(METADATA_PATH, encoding='utf-8') as f:
         raw = json.load(f)
 
     # 2) 클리닝 & 데이터 재구성
