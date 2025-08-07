@@ -639,7 +639,7 @@ def report(request, yyyymm):
 
         # 현재 날짜 기준 미래인 경우, 다음 달 링크 비활성화
         'today_yyyymm': today.year * 100 + today.month,
-        'year_list': list(range(2023, today.year + 1)),
+        'year_list': list(range(2025, today.year + 1)),
         'month_list': list(range(1, 13)),
 
         # 해당 연/월에 diary 데이터 존재 여부
