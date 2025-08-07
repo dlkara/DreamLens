@@ -1,46 +1,236 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <title>내 정보 수정</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>내 정보 수정 - 꿈해몽</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="{% static 'css/common.css' %}">
+
+    <!-- 아이콘 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-  <h2>내 정보 수정</h2>
+    <!-- 헤더 포함 -->
+    {% include 'header.html' %}
 
-  <form method="POST" action="{% url 'mypage' %}">
-    {% csrf_token %}
+    <!-- 메인 컨테이너 -->
+    <div class="main-container">
+        <div class="container">
+            <!-- 페이지 헤더 -->
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="fas fa-user-edit" style="color: var(--color-purple-main); margin-right: 12px;"></i>
+                    내 정보 수정
+                </h1>
+                <p class="page-subtitle">개인정보를 안전하게 관리하세요</p>
+            </div>
 
-    <!-- 아이디 (readonly) -->
-    <input type="text" name="username" value="{{ user.username }}" readonly>
+            <!-- 정보 수정 폼 -->
+            <div class="form-section">
+                <div class="form-header">
+                    <h2 class="form-title">프로필 정보</h2>
+                    <p class="form-subtitle">변경하고 싶은 정보를 입력해주세요</p>
+                </div>
 
-    <!-- 비밀번호 변경 -->
-    <input type="password" name="password" placeholder="비밀번호">
-    <input type="password" name="password2" placeholder="비밀번호 확인">
+                <form method="POST" action="{% url 'mypage' %}" class="register-form">
+                    {% csrf_token %}
 
-    <!-- 닉네임 -->
-    <input type="text" name="nickname" value="{{ user.nickname }}" required>
+                    <div class="register-form-container">
+                        <!-- 아이디 (읽기 전용) -->
+                        <div class="form-group">
+                            <label for="username" class="form-label">
+                                <i class="fas fa-user"></i>
+                                아이디
+                            </label>
+                            <input
+                                type="text"
+                                id="username"
+                                name="username"
+                                value="{{ user.username }}"
+                                readonly
+                                class="form-input"
+                                style="background-color: var(--color-gray-100); color: var(--color-gray-600);"
+                            >
+                        </div>
 
-    <!-- 생년월일 -->
-    <input type="date" name="birth" value="{{ user.birth|date:'Ymd' }}" placeholder="생년월일 (8자리)">
+                        <!-- 비밀번호 변경 -->
+                        <div class="form-group">
+                            <label for="password" class="form-label">
+                                <i class="fas fa-lock"></i>
+                                새 비밀번호
+                            </label>
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                placeholder="새 비밀번호를 입력하세요"
+                                class="form-input"
+                            >
+                        </div>
 
-    <!-- 성별 -->
-    <select name="gender">
-      <option value="">선택 안 함 (default)</option>
-      <option value="남자" {% if user.gender == "남자" %}selected{% endif %}>남자</option>
-      <option value="여자" {% if user.gender == "여자" %}selected{% endif %}>여자</option>
-      <option value="기타" {% if user.gender == "기타" %}selected{% endif %}>기타</option>
-    </select>
+                        <div class="form-group">
+                            <label for="password2" class="form-label">
+                                <i class="fas fa-lock"></i>
+                                비밀번호 확인
+                            </label>
+                            <input
+                                type="password"
+                                id="password2"
+                                name="password2"
+                                placeholder="새 비밀번호를 다시 입력하세요"
+                                class="form-input"
+                            >
+                        </div>
 
-    <br>
-    <button type="submit">저장하기</button>
-  </form>
+                        <!-- 닉네임 -->
+                        <div class="form-group">
+                            <label for="nickname" class="form-label">
+                                <i class="fas fa-smile"></i>
+                                닉네임 <span class="required">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                id="nickname"
+                                name="nickname"
+                                value="{{ user.nickname }}"
+                                required
+                                placeholder="닉네임을 입력하세요"
+                                class="form-input"
+                            >
+                        </div>
 
-  {% if messages %}
-    <ul>
-      {% for message in messages %}
-        <li>{{ message }}</li>
-      {% endfor %}
-    </ul>
-  {% endif %}
+                        <!-- 생년월일 -->
+                        <div class="form-group">
+                            <label for="birth" class="form-label">
+                                <i class="fas fa-calendar-alt"></i>
+                                생년월일
+                            </label>
+                            <input
+                                type="date"
+                                id="birth"
+                                name="birth"
+                                value="{{ user.birth|date:'Y-m-d' }}"
+                                class="form-input"
+                            >
+                        </div>
+
+                        <!-- 성별 -->
+                        <div class="form-group">
+                            <label for="gender" class="form-label">
+                                <i class="fas fa-venus-mars"></i>
+                                성별
+                            </label>
+                            <div class="select-wrapper">
+                                <select id="gender" name="gender" class="form-select">
+                                    <option value="">선택 안 함</option>
+                                    <option value="남자" {% if user.gender == "남자" %}selected{% endif %}>남자</option>
+                                    <option value="여자" {% if user.gender == "여자" %}selected{% endif %}>여자</option>
+                                    <option value="기타" {% if user.gender == "기타" %}selected{% endif %}>기타</option>
+                                </select>
+                                <i class="fas fa-chevron-down select-arrow"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 저장 버튼 -->
+                    <button type="submit" class="btn btn-primary btn-large btn-full">
+                        <i class="fas fa-save btn-icon"></i>
+                        변경사항 저장하기
+                    </button>
+                </form>
+
+                <!-- 메시지 표시 -->
+                {% if messages %}
+                    <div class="messages-container">
+                        {% for message in messages %}
+                            {% if message.tags == 'success' %}
+                                <div class="message message-success">
+                                    <i class="fas fa-check-circle message-icon"></i>
+                                    <span class="message-text">{{ message }}</span>
+                                </div>
+                            {% else %}
+                                <div class="message message-error">
+                                    <i class="fas fa-exclamation-circle message-icon"></i>
+                                    <span class="message-text">{{ message }}</span>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <!-- 추가 액션 버튼들 -->
+                <div class="form-footer">
+                    <div class="action-buttons">
+                        <a href="{% url 'index' %}" class="btn btn-secondary">
+                            <i class="fas fa-home btn-icon"></i>
+                            홈으로 돌아가기
+                        </a>
+                        <a href="{% url 'diary_list_base' %}" class="btn btn-secondary">
+                            <i class="fas fa-book btn-icon"></i>
+                            내 일기장 보기
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const passwordInput = document.getElementById('password');
+            const password2Input = document.getElementById('password2');
+            const form = document.querySelector('.register-form');
+
+            function validatePasswords() {
+                const password = passwordInput.value;
+                const password2 = password2Input.value;
+
+                // 항상 초기화
+                passwordInput.setCustomValidity('');
+                password2Input.setCustomValidity('');
+
+                if (password || password2) {
+                    if (password !== password2) {
+                        password2Input.setCustomValidity('비밀번호가 일치하지 않습니다.');
+                    } else if (password.length < 4) {
+                        passwordInput.setCustomValidity('비밀번호는 4자 이상이어야 합니다.');
+                    }
+                }
+            }
+
+            passwordInput.addEventListener('input', validatePasswords);
+            password2Input.addEventListener('input', validatePasswords);
+
+            form.addEventListener('submit', function (e) {
+                validatePasswords();
+
+                if (!form.checkValidity()) {
+                    e.preventDefault();
+                    form.reportValidity();
+                    return;
+                }
+            });
+
+            const messages = document.querySelectorAll('.message');
+            messages.forEach(message => {
+                setTimeout(() => {
+                    message.style.opacity = '0';
+                    message.style.transform = 'translateY(-10px)';
+                    setTimeout(() => {
+                        message.remove();
+                    }, 300);
+                }, 5000);
+            });
+        });
+    </script>
 </body>
 </html>

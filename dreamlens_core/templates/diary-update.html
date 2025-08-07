@@ -1,10 +1,215 @@
+{% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>꿈 일기장</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>꿈 일기 수정 - 꿈해몽</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="{% static 'css/common.css' %}">
+
+    <!-- 아이콘 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-diary-update
+    <!-- 헤더 포함 -->
+    {% include 'header.html' %}
+
+    <!-- 메인 컨테이너 -->
+    <div class="diary-update-page">
+        <div class="container">
+            <!-- 페이지 헤더 -->
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="fas fa-edit" style="color: var(--color-purple-main); margin-right: 12px;"></i>
+                    꿈 일기 수정하기
+                </h1>
+                <p class="page-subtitle">{{ diary.date|date:"Y년 n월 j일" }}의 꿈을 수정합니다</p>
+            </div>
+
+            <!-- 수정 폼 -->
+            <form method="POST" action="{% url 'diary_update' diary.pk %}" class="diary-update-form">
+                {% csrf_token %}
+
+                <div class="diary-update-card">
+                    <div class="diary-update-content">
+                        <!-- 읽기 전용 정보 섹션 -->
+                        <div class="readonly-section">
+                            <h3 class="section-title">
+                                <i class="fas fa-eye section-icon"></i>
+                                원본 꿈 정보
+                            </h3>
+
+                            <!-- 꿈 내용 -->
+                            <div class="readonly-group">
+                                <label class="readonly-label">
+                                    <i class="fas fa-cloud"></i>
+                                    꿈 내용
+                                </label>
+                                <div class="readonly-field">{{ diary.interpretation.input_text }}</div>
+                            </div>
+
+                            <!-- 해몽 결과 -->
+                            <div class="readonly-group">
+                                <label class="readonly-label">
+                                    <i class="fas fa-magic"></i>
+                                    AI 해몽 결과
+                                </label>
+                                <div class="readonly-field interpretation-readonly">{{ diary.interpretation.result }}</div>
+                            </div>
+
+                            <!-- 핵심 키워드 -->
+                            <div class="readonly-group">
+                                <label class="readonly-label">
+                                    <i class="fas fa-tags"></i>
+                                    핵심 키워드
+                                </label>
+                                <div class="readonly-field keywords-readonly">{{ diary.interpretation.keywords }}</div>
+                            </div>
+                        </div>
+
+                        <!-- 구분선 -->
+                        <div class="update-divider"></div>
+
+                        <!-- 수정 가능한 정보 섹션 -->
+                        <div class="editable-section">
+                            <h3 class="section-title">
+                                <i class="fas fa-edit section-icon"></i>
+                                수정 가능한 정보
+                            </h3>
+
+                            <div class="form-grid">
+                                <!-- 날짜 -->
+                                <div class="form-group">
+                                    <label for="{{ form.date.id_for_label }}" class="form-label">
+                                        <i class="fas fa-calendar-alt"></i>
+                                        {{ form.date.label }}
+                                    </label>
+                                    {{ form.date }}
+                                </div>
+
+                                <!-- 꿈 종류 -->
+                                <div class="form-group">
+                                    <label for="{{ form.dream_type.id_for_label }}" class="form-label">
+                                        <i class="fas fa-star"></i>
+                                        {{ form.dream_type.label }}
+                                    </label>
+                                    <div class="select-wrapper">
+                                        {{ form.dream_type }}
+                                        <i class="fas fa-chevron-down select-arrow"></i>
+                                    </div>
+                                </div>
+
+                                <!-- 감정 -->
+                                <div class="form-group">
+                                    <label for="{{ form.emotion.id_for_label }}" class="form-label">
+                                        <i class="fas fa-heart"></i>
+                                        {{ form.emotion.label }}
+                                    </label>
+                                    <div class="select-wrapper">
+                                        {{ form.emotion }}
+                                        <i class="fas fa-chevron-down select-arrow"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 폼 유효성 검사 오류 -->
+                        {% if form.errors %}
+                            <div class="form-errors">
+                                <div class="error-header">
+                                    <i class="fas fa-exclamation-triangle error-icon"></i>
+                                    <h4 class="error-title">입력 오류가 있습니다</h4>
+                                </div>
+                                <div class="error-list">
+                                    {% for field in form %}
+                                        {% for error in field.errors %}
+                                            <div class="error-item">
+                                                <i class="fas fa-times-circle"></i>
+                                                <span>{{ field.label }}: {{ error }}</span>
+                                            </div>
+                                        {% endfor %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        <!-- 액션 버튼들 -->
+                        <div class="diary-update-actions">
+                            <a href="{% url 'diary_detail' diary.pk %}" class="btn btn-secondary">
+                                <i class="fas fa-times btn-icon"></i>
+                                취소
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save btn-icon"></i>
+                                수정 완료
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 푸터 포함 -->
+    {% include 'footer.html' %}
+
+    <!-- JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 폼 검증
+            const form = document.querySelector('.diary-update-form');
+            const dateInput = document.querySelector('input[type="date"]');
+
+            form.addEventListener('submit', function(e) {
+                let isValid = true;
+
+                // 날짜 검증
+                if (dateInput && dateInput.value) {
+                    const selectedDate = new Date(dateInput.value);
+                    const today = new Date();
+                    today.setHours(23, 59, 59, 999); // 오늘 끝까지 허용
+
+                    if (selectedDate > today) {
+                        alert('미래 날짜는 선택할 수 없습니다.');
+                        isValid = false;
+                        e.preventDefault();
+                    }
+                }
+
+                if (!isValid) {
+                    return false;
+                }
+            });
+
+            // 페이지 로드 애니메이션
+            const updateCard = document.querySelector('.diary-update-card');
+            updateCard.style.opacity = '0';
+            updateCard.style.transform = 'translateY(20px)';
+
+            setTimeout(() => {
+                updateCard.style.transition = 'all 0.6s ease';
+                updateCard.style.opacity = '1';
+                updateCard.style.transform = 'translateY(0)';
+            }, 100);
+
+            // 에러 메시지 자동 스크롤
+            const errorSection = document.querySelector('.form-errors');
+            if (errorSection) {
+                setTimeout(() => {
+                    errorSection.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                }, 500);
+            }
+        });
+    </script>
 </body>
 </html>

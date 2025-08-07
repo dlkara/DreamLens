@@ -1,0 +1,11 @@
+{% if result > 0 %}
+    <script>
+        alert('삭제 성공');
+        location.href = "{% url 'diary_list_base' %}";
+    </script>
+{% else %}
+    <script>
+        alert('삭제 실패');
+        history.back();
+    </script>
+{% endif %}

@@ -552,8 +552,17 @@ def diary_updateOk(request, pk):
     return render(request, 'diary-updateOk.html', {'pk': pk})
 
 
-def diary_delete(request, pk):
-    ...
+def diary_delete(request):
+    if request.method == "POST":
+        try:
+            pk = request.POST['pk']
+            diary = Diary.objects.get(pk=pk)
+            deleted_count, _ = diary.delete() # DELETE => Tuple[int, dict[str, int]]
+                          # (deleted_count, deleted_dict)
+                          # (삭제된 개체수, 모델별 삭제수)
+        except Diary.DoesNotExist:
+            deleted_count = 0
+    return render(request, 'diary-delete.html', {'result': deleted_count})
 
 
 # ------------------------------
