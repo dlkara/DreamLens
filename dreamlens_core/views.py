@@ -426,10 +426,32 @@ def diary_list(request, yyyymm=None):
     return render(request, 'diary-list.html', context)
 
 
+@login_required
 def diary_detail(request, pk):
-    return render(request, 'diary-detail.html')
+    try:
+        # 먼저 pk로 일기가 존재하는지 check
+        diary = Diary.objects.get(pk=pk)
+
+        # 일기가 존재한다면, 현재 로그인한 사용자의 것인지 확인
+        if diary.user == request.user:
+            # 본인의 일기가 맞으면, 정상적으로 상세 페이지를 보여줍니다.
+            return render(request, 'diary-detail.html', {'diary': diary})
+        else:
+            # 일기는 존재하지만, 다른 사람의 것일 경우
+            access_limit_message = "다른 사람의 일기는 열람할 수 없습니다."
+            return render(request, 'diary-access-limit.html', {
+                'access_limit_message': access_limit_message,
+            })
+
+    except Diary.DoesNotExist:
+        # DB에 해당 pk의 일기가 아예 존재하지 않을 경우
+        error_message = "존재하지 않는 일기입니다."
+        return render(request, 'diary-access-limit.html', {
+            'error_message': error_message,
+        })
 
 
+@login_required
 def diary_write(request):
     if request.method == "GET":
         return render(request, "inaccessible.html")
@@ -448,6 +470,7 @@ def diary_write(request):
 
 def diary_writeOk(request):
     if request.method == 'POST':
+        context = {}
         form = DiaryForm(request.POST)
         if form.is_valid():
             diary = form.save(commit=False)
@@ -455,7 +478,51 @@ def diary_writeOk(request):
             diary.interpretation = Interpretation.objects.get(pk=request.POST['interpret_pk'])
             diary.save()
 
-            return render(request, 'diary-writeOk.html', {'pk': diary.pk})
+            context['pk'] = diary.pk
+            # print(context, diary.pk)
+            return render(request, 'diary-writeOk.html', context)
+
+
+def diary_update(request, pk):
+    """
+    pk에 해당하는 꿈 일기를 수정하는 뷰
+    """
+    try:
+        # 먼저 pk로 일기가 존재하는지 check
+        diary = Diary.objects.get(pk=pk)
+
+        # 일기가 존재한다면, 현재 로그인한 사용자의 것인지 확인
+        if diary.user == request.user:
+            if request.method == "GET":
+                form = DiaryForm(instance=diary)
+                # 본인의 일기가 맞으면, 정상적으로 상세 페이지로 ㄱㄱ
+                return render(request, 'diary-update.html', {'form': form, 'diary': diary})
+
+            elif request.method == "POST":
+                form = DiaryForm(request.POST, instance=diary)
+                if form.is_valid():
+                    form.save()  # 유효성 검사를 통과하면 DB에 변경사항을 저장합니다.
+                    return render(request, 'diary-updateOk.html', {'pk': diary.pk})  # 수정 후 상세 페이지로 이동합니다.
+
+        else:
+            # 일기는 존재하지만, 다른 사람의 것일 경우
+            access_limit_message = "다른 사람의 일기는 수정할 수 없습니다."
+            return render(request, 'diary-access-limit.html', {
+                'access_limit_message': access_limit_message,
+            })
+
+    except Diary.DoesNotExist:
+        # DB에 해당 pk의 일기가 아예 존재하지 않을 경우
+        error_message = "존재하지 않는 일기입니다."
+        return render(request, 'diary-access-limit.html', {
+            'error_message': error_message,
+        })
+
+def diary_updateOk(request, pk):
+    return render(request, 'diary-updateOk.html', {'pk': pk})
+
+def diary_delete(request, pk):
+    ...
 
 
 # ------------------------------
