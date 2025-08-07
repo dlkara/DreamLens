@@ -1,123 +1,228 @@
-<!DOCTYPE html>
 {% load static %}
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>꿈 리포트</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/report.css' %}"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>꿈 분석 리포트 - 꿈해몽</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="{% static 'css/common.css' %}">
+    <link rel="stylesheet" href="{% static 'css/report.css' %}">
+
+    <!-- JavaScript -->
+    <script src="{% static 'js/report.js' %}" defer></script>
+
+    <!-- 아이콘 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-{% include 'header.html' %}
+    {% include 'header.html' %}
 
-<h2>내 일기장 분석 리포트</h2>
+    <main class="report-main">
+        <div class="container">
+            <!-- 페이지 헤더 -->
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="fas fa-chart-line" style="color: var(--color-purple-main); margin-right: 12px;"></i>
+                    꿈 분석 리포트
+                </h1>
+                <p class="page-subtitle">당신의 꿈을 데이터로 분석해보세요</p>
+            </div>
 
-<div class="report-container">
-    <!-- 월 네비게이션 -->
-    <div class="month-nav">
-        <a href="{% url 'report' prev_yyyymm %}" class="{% if prev_yyyymm < 202301 %}disabled{% endif %}">◀</a>
-        <span id="monthText" class="clickable">{{ year }}년 {{ month }}월</span>
-        <a href="{% if next_yyyymm <= today_yyyymm %}{% url 'report' next_yyyymm %}{% endif %}"
-           class="{% if next_yyyymm > today_yyyymm %}disabled{% endif %}">▶</a>
-    </div>
+            <!-- 월 네비게이션 -->
+            <div class="month-nav-card">
+                <div class="month-nav">
+                    <button class="nav-btn {% if prev_yyyymm < 202301 %}disabled{% endif %}"
+                            onclick="{% if prev_yyyymm >= 202301 %}location.href='{% url 'report' prev_yyyymm %}'{% endif %}">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
 
-    <!-- 드롭다운 선택기 -->
-    <div class="selector hidden" id="selectorBox">
-        <select id="yearSelect">
-            {% for y in year_list %}
-                <option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}년</option>
-            {% endfor %}
-        </select>
-        <select id="monthSelect">
-            {% for m in month_list %}
-                <option value="{{ m }}" {% if m == month %}selected{% endif %}>{{ m }}월</option>
-            {% endfor %}
-        </select>
-        <button id="moveBtn">이동</button>
-    </div>
+                    <div class="month-display" id="monthText">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>{{ year }}년 {{ month }}월</span>
+                        <i class="fas fa-chevron-down dropdown-icon"></i>
+                    </div>
 
-    <!-- 탭 -->
-    <div class="tabs">
-        <div class="tab active" data-target="dream">꿈 종류 분석</div>
-        <div class="tab" data-target="emotion">감정 분석</div>
-    </div>
+                    <button class="nav-btn {% if next_yyyymm > today_yyyymm %}disabled{% endif %}"
+                            onclick="{% if next_yyyymm <= today_yyyymm %}location.href='{% url 'report' next_yyyymm %}'{% endif %}">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
 
-    <!-- 차트 -->
-    <div class="chart-wrapper">
-        <div id="dreamChartBox" class="chart-box">
-            <canvas id="dreamChart"></canvas>
-        </div>
-        <div id="emotionChartBox" class="chart-box hidden">
-            <canvas id="emotionChart"></canvas>
-        </div>
+                <!-- 드롭다운 선택기 -->
+                <div class="month-selector hidden" id="selectorBox">
+                    <div class="selector-row">
+                        <div class="select-group">
+                            <label>년도</label>
+                            <select id="yearSelect" class="form-select">
+                                {% for y in year_list %}
+                                    <option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}년</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="select-group">
+                            <label>월</label>
+                            <select id="monthSelect" class="form-select">
+                                {% for m in month_list %}
+                                    <option value="{{ m }}" {% if m == month %}selected{% endif %}>{{ m }}월</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <button id="moveBtn" class="btn btn-primary">
+                        <i class="fas fa-arrow-right"></i>
+                        이동하기
+                    </button>
+                </div>
+            </div>
 
-        <!-- 차트 문구 -->
-        <div class="result-text" id="chartDesc">
+            <!-- 데이터 없음 상태 -->
             {% if not has_data %}
-                {{ year }}년 {{ month }}월에는 꿈 일기가 없습니다.
+                <div class="empty-state-card">
+                    <div class="empty-state-content">
+                        <div class="empty-icon">📊</div>
+                        <h3>분석할 데이터가 없습니다</h3>
+                        <p>{{ year }}년 {{ month }}월에는 기록된 꿈이 없어요.<br>새로운 꿈을 해몽해보세요!</p>
+                        <a href="{% url 'dream_interpreter' %}" class="btn btn-primary">
+                            <i class="fas fa-magic"></i>
+                            꿈 해몽하러 가기
+                        </a>
+                    </div>
+                </div>
+            {% else %}
+                <!-- 분석 탭 -->
+                <div class="analysis-tabs-card">
+                    <div class="tabs-header">
+                        <h2 class="tabs-title">
+                            <i class="fas fa-analytics"></i>
+                            월별 분석 리포트
+                        </h2>
+                    </div>
+
+                    <div class="tabs-nav">
+                        <button class="tab-btn active" data-target="dream">
+                            <i class="fas fa-moon"></i>
+                            꿈 종류 분석
+                        </button>
+                        <button class="tab-btn" data-target="emotion">
+                            <i class="fas fa-heart"></i>
+                            감정 분석
+                        </button>
+                    </div>
+
+                    <!-- 차트 영역 -->
+                    <div class="chart-container">
+                        <div id="dreamChartBox" class="chart-box">
+                            <div class="chart-header">
+                                <h3>꿈 종류별 분포</h3>
+                                <p>이번 달 어떤 종류의 꿈을 많이 꾸셨나요?</p>
+                            </div>
+                            <div class="chart-wrapper">
+                                <canvas id="dreamChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div id="emotionChartBox" class="chart-box hidden">
+                            <div class="chart-header">
+                                <h3>감정별 분포</h3>
+                                <p>꿈에서 느낀 감정들을 분석해보세요</p>
+                            </div>
+                            <div class="chart-wrapper">
+                                <canvas id="emotionChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- 차트 결과 텍스트 -->
+                        <div class="chart-result" id="chartDesc">
+                            <div class="result-highlight" id="resultLabel"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 워드 클라우드 -->
+                <div class="wordcloud-card">
+                    <div class="wordcloud-header">
+                        <h3>
+                            <i class="fas fa-cloud"></i>
+                            꿈 키워드 클라우드
+                        </h3>
+                        <p>꿈에서 자주 나타나는 키워드들을 시각화했어요</p>
+                    </div>
+
+                    <div class="wordcloud-container">
+                        <div id="wordCloudArea"></div>
+                    </div>
+                </div>
+
+                <!-- 감정 키워드 분석 -->
+                <div class="analysis-card">
+                    <div class="analysis-header">
+                        <h3>
+                            <i class="fas fa-brain"></i>
+                            감정별 키워드 연관성 분석
+                        </h3>
+                        <p>{{ analysis_year }}년 {{ analysis_month }}월의 감정과 상징 연계 분석</p>
+                    </div>
+
+                    <div class="analysis-content">
+                        {% if emotion_keyword_analysis %}
+                            <div class="analysis-table">
+                                {% for emotion, keywords in emotion_keyword_analysis.items %}
+                                    <div class="analysis-row">
+                                        <div class="emotion-label">
+                                            <i class="fas fa-heart emotion-icon"></i>
+                                            <span class="emotion-text">{{ emotion }}</span>
+                                        </div>
+                                        <div class="keywords-list">
+                                            {% for keyword in keywords %}
+                                                <span class="keyword-badge">{{ keyword }}</span>
+                                            {% empty %}
+                                                <span class="no-keywords">연관 키워드 없음</span>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="no-analysis">
+                                <div class="no-analysis-icon">🤔</div>
+                                <p>분석할 데이터가 부족해요</p>
+                                <span>더 많은 꿈 일기를 작성하면 정확한 분석을 받을 수 있어요!</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
             {% endif %}
         </div>
-    </div>
+    </main>
 
-    <!-- 워드 클라우드 -->
-    <div class="wordcloud-section">
-        <h3>꿈 키워드 클라우드</h3>
-        <div id="wordCloudArea"></div>
-    </div>
+    {% include 'footer.html' %}
 
-    <!-- 감정 & 키워드 분석 -->
-    <div class="analysis-section">
-        <div class="card-header">
-        <!-- 분석 기간을 표시해줍니다. -->
-        {{ analysis_year }}년 {{ analysis_month }}월의 감정 & 상징 연계 분석
-    </div>
-    <div class="card-body p-0"> {# 테이블과 카드 경계가 자연스럽도록 패딩 제거 #}
-        {% if emotion_keyword_analysis %}
-            <table class="table table-hover mb-0"> {# 카드 내부에 꽉 차도록 mb-0 추가 #}
-                <thead class="table-light">
-                    <tr>
-                        <th scope="col" class="ps-4" style="width: 40%;">감정</th>
-                        <th scope="col">연관 키워드 Top 3</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for emotion, keywords in emotion_keyword_analysis.items %}
-                        <tr>
-                            <td class="ps-4 fw-bold">{{ emotion }}</td>
-                            <td>
-                                {% for keyword in keywords %}
-                                    <span class="badge bg-secondary me-1">{{ keyword }}</span>
-                                {% empty %}
-                                    <span class="text-muted small">연관 키워드 없음</span>
-                                {% endfor %}
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% else %}
-            <p class="text-center text-muted py-5">해당 기간에 분석할 데이터가 충분하지 않아요. 꿈 일기를 더 작성해보세요!</p>
-        {% endif %}
-    </div>
-    </div>
-</div>
+    <!-- JavaScript 데이터 -->
+    <script>
+        const dreamLabels = {{ dream_labels|safe }};
+        const dreamData = {{ dream_data|safe }};
+        const emotionLabels = {{ emotion_labels|safe }};
+        const emotionIcons = {{ emotion_icons|safe }};
+        const emotionData = {{ emotion_data|safe }};
+        const keywords = {{ keywords|safe }};
+        const currentYear = {{ year }};
+        const currentMonth = {{ month }};
+        const todayYyyymm = {{ today_yyyymm }};
+        const hasData = {{ has_data|yesno:"true,false" }};
+    </script>
 
-{% include 'footer.html' %}
+    <!-- 외부 라이브러리 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/wordcloud@1.1.2/src/wordcloud2.min.js"></script>
 
-<script>
-    const dreamLabels = {{ dream_labels|safe }};
-    const dreamData = {{ dream_data|safe }};
-    const emotionLabels = {{ emotion_labels|safe }};
-    const emotionIcons = {{ emotion_icons|safe }};
-    const emotionData = {{ emotion_data|safe }};
-    const keywords = {{ keywords|safe }};
-    const currentYear = {{ year }};
-    const currentMonth = {{ month }};
-    const todayYyyymm = {{ today_yyyymm }};
-    const hasData = {{ has_data|yesno:"true,false" }};
-</script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/wordcloud@1.1.2/src/wordcloud2.min.js"></script>
-<script defer src="{% static 'js/report.js' %}"></script>
+    <!-- 커스텀 JavaScript -->
+    <script defer src="{% static 'js/report.js' %}"></script>
 </body>
 </html>
