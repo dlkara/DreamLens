@@ -1,10 +1,47 @@
+{% load static %}
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>꿈 일기 분석 리포트</title>
+    <link rel="stylesheet" href="{% static 'css/report.css' %}">
 </head>
 <body>
-report
+    {% include 'header.html' %}
+
+    <h2>내 일기장 분석 리포트</h2>
+
+    <div class="report-container">
+        <!-- ① 폴더 형태 탭 -->
+        <div class="tabs">
+            <button id="typeTab" class="tab active">꿈 종류 분석</button>
+            <button id="emotionTab" class="tab">감정 분석</button>
+        </div>
+
+        <!-- ② 차트 표시 영역 -->
+        <div class="chart-wrapper">
+            <canvas id="reportChart"></canvas>
+
+            <!-- ③ 결과 문구: id 추가 -->
+            <div class="result-text" id="resultText">
+                –
+            </div>
+        </div>
+    </div>
+
+    {% include 'footer.html' %}
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
+
+    <script>
+        const dreamLabels   = {{ dream_labels|safe }};
+        const dreamData     = {{ dream_data|safe }};
+        const emotionLabels = {{ emotion_labels|safe }};
+        const emotionIcons  = {{ emotion_icons|safe }};
+        const emotionData   = {{ emotion_data|safe }};
+    </script>
+
+    <script src="{% static 'js/report.js' %}"></script>
 </body>
 </html>

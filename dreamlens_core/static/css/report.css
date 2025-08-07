@@ -1,0 +1,64 @@
+/* static/css/report.css */
+
+.report-container {
+    max-width: 600px;
+    margin: 2em auto;
+    font-family: sans-serif;
+}
+
+/* ── 탭 영역 ── */
+.tabs {
+    display: flex;
+    width: 100%;
+    gap: 4px;
+    margin-bottom: -1px;
+}
+
+.tab {
+    flex: 1;
+    text-align: center;
+    background: #ddd; /* 비선택 탭 기본 회색 */
+    color: #333;
+    border: 1px solid #ccc;
+    border-bottom: none;
+    padding: 0.6em 1.2em;
+    cursor: pointer;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    font-weight: bold;
+    transition: background .2s, color .2s;
+}
+
+.tab:hover {
+    background: #ccc; /* 호버 시 조금 더 진한 회색 */
+}
+
+.tab.active {
+    background: #fff; /* 선택된 탭은 흰색 */
+    color: #000;
+    position: relative;
+    top: 1px;
+    z-index: 2;
+}
+
+/* ── 차트 래퍼 ── */
+.chart-wrapper {
+    border: 1px solid #ccc;
+    padding: 1em;
+    background: #fff;
+}
+
+/* ── 결과 문구 ── */
+.result-text {
+    text-align: center;
+    margin-top: 1em;
+    font-size: 1.1em;
+}
+
+/* ── 결과 하이라이트 ── */
+#resultLabel {
+    background-color: yellow;
+    font-weight: bold;
+    padding: 0.1em 0.3em 0.3em;
+    border-radius: 10px;
+}

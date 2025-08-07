@@ -5,6 +5,7 @@ import faiss
 import numpy as np
 from pathlib import Path
 import pytz
+from collections import defaultdict
 
 import calendar
 from datetime import date
@@ -18,15 +19,16 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from dreamlens_core.models import Interpretation
-from .forms import DiaryForm
-
 from django.contrib.auth import get_user_model  # 현재 설정된 User 모델 반환
 
 User = get_user_model()
 
+from django.db.models import Count
+
+from .models import Interpretation
 from .models import DreamDict
 from .models import Diary
+from .forms import DiaryForm
 from .forms import MyPageForm
 
 # ------------------------------
@@ -334,11 +336,11 @@ def dream_combiner(request):
 
 
 # ------------------------------
-# 4. 꿈 일기장  TODO : 현정, 지우
+# 4. 꿈 일기장 -> TODO : 현정, 지우
 # ------------------------------
 @login_required
 def diary_list(request, yyyymm=None):
-    # 1) 파라미터 없으면 오늘 기준 리다이렉트
+    # 1) 파라미터 없으면 오늘 기준으로 리다이렉트
     if yyyymm is None:
         today = timezone.localdate()
         return redirect('diary_list', yyyymm=today.year * 100 + today.month)
@@ -358,7 +360,7 @@ def diary_list(request, yyyymm=None):
     prev_yyyymm = prev_dt.year * 100 + prev_dt.month
     next_yyyymm = next_dt.year * 100 + next_dt.month
 
-    # 5) KST → UTC 필터링
+    # 5) KST 기준 월초/다음월초를 UTC-aware로 계산
     tz = timezone.get_current_timezone()
     start_local = timezone.make_aware(datetime(year, month, 1, 0, 0), tz)
     if month == 12:
@@ -366,43 +368,69 @@ def diary_list(request, yyyymm=None):
     else:
         ny, nm = year, month + 1
     end_local = timezone.make_aware(datetime(ny, nm, 1, 0, 0), tz)
+    start_utc = start_local.astimezone(pytz.UTC)
+    end_utc = end_local.astimezone(pytz.UTC)
 
+    # 6) 해당 기간의 일기 조회 (pk 오름차순)
     qs = Diary.objects.filter(
         user=request.user,
-        date__gte=start_local.astimezone(pytz.UTC),
-        date__lt=end_local.astimezone(pytz.UTC),
-    )
+        date__gte=start_utc,
+        date__lt=end_utc,
+    ).order_by('pk')
 
-    # 6) 일자별 PK & dream_type 매핑
+    # 7) 날짜별 색상용 정보(day_info)와 모달용 엔트리(entries_by_day) 수집
     day_info = {}
+    entries_by_day = defaultdict(list)
     for entry in qs:
         d = timezone.localtime(entry.date).day
-        day_info[d] = {
-            'pk': entry.pk,
-            'dream_type': entry.dream_type_id,  # <-- 여기 키 이름을 dream_type 으로!
-        }
 
-    # 7) 달력용 2D 셀 생성
+        # 첫 번째(=가장 작은 pk) 일기로만 색상 정보 등록
+        if d not in day_info:
+            day_info[d] = {
+                'pk': entry.pk,
+                'dream_type': entry.dream_type_id,
+            }
+
+        # 모달용: interpretation.input_text 앞 20자 잘라서 title로 사용
+        interp = getattr(entry, 'interpretation', None)
+        raw = interp.input_text if interp else ''
+        snippet = raw[:20] + '…' if len(raw) > 20 else raw
+
+        entries_by_day[d].append({
+            'pk': entry.pk,
+            'title': snippet,
+        })
+
+    # 8) 달력용 2D 배열 생성 (일요일 시작)
     cal = calendar.Calendar(firstweekday=6)
     raw_weeks = cal.monthdayscalendar(year, month)
+
     month_days = []
     for week in raw_weeks:
         row = []
         for day in week:
             if day == 0:
-                row.append({'day': None, 'pk': None,
-                            'is_good': False, 'is_bad': False, 'is_normal': False})
+                # 빈 칸
+                row.append({
+                    'day': None,
+                    'pk': None,
+                    'is_good': False,
+                    'is_bad': False,
+                    'is_normal': False,
+                })
             else:
                 info = day_info.get(day)
                 if info:
                     pk = info['pk']
-                    t = info['dream_type']  # <-- 똑같이 dream_type 으로 꺼내고
-                    is_good = (t == 1)  # == 로 비교
+                    t = info['dream_type']
+                    is_good = (t == 1)
                     is_bad = (t == 2)
                     is_normal = not (is_good or is_bad)
                 else:
                     pk = None
-                    is_good = is_bad = is_normal = False
+                    is_good = False
+                    is_bad = False
+                    is_normal = False
 
                 row.append({
                     'day': day,
@@ -413,7 +441,7 @@ def diary_list(request, yyyymm=None):
                 })
         month_days.append(row)
 
-    # 8) context 정의
+    # 9) 컨텍스트에 JSON 직렬화된 entries_by_day 포함
     context = {
         'year': year,
         'month': month,
@@ -421,6 +449,7 @@ def diary_list(request, yyyymm=None):
         'month_days': month_days,
         'prev_yyyymm': prev_yyyymm,
         'next_yyyymm': next_yyyymm,
+        'entries_by_day_json': json.dumps(entries_by_day),
     }
 
     return render(request, 'diary-list.html', context)
@@ -526,10 +555,43 @@ def diary_delete(request, pk):
 
 
 # ------------------------------
-# 5. 분석 리포트 TODO : 지우
+# 5. 분석 리포트 TODO : 현정
 # ------------------------------
+@login_required
 def report(request):
-    return render(request, "report.html")
+    # 1) 현재 사용자 일기 전체 조회
+    diaries = Diary.objects.filter(user=request.user)
+
+    # 2) 꿈 종류 분석: dream_type__type별 일기 수 집계
+    dream_counts = (
+        diaries
+        .values('dream_type__type')
+        .annotate(count=Count('id'))
+        .order_by('-count')
+    )
+    dream_labels = [item['dream_type__type'] for item in dream_counts]
+    dream_data = [item['count'] for item in dream_counts]
+
+    # 3) 감정 분석: emotion__name, emotion__icon별 일기 수 집계
+    emotion_counts = (
+        diaries
+        .values('emotion__name', 'emotion__icon')
+        .annotate(count=Count('id'))
+        .order_by('-count')
+    )
+    emotion_labels = [item['emotion__name'] for item in emotion_counts]
+    emotion_icons = [item['emotion__icon'] for item in emotion_counts]
+    emotion_data = [item['count'] for item in emotion_counts]
+
+    # 4) JSON 직렬화 (ensure_ascii=False 로 한글 깨짐 방지)
+    context = {
+        'dream_labels': json.dumps(dream_labels, ensure_ascii=False),
+        'dream_data': json.dumps(dream_data),
+        'emotion_labels': json.dumps(emotion_labels, ensure_ascii=False),
+        'emotion_icons': json.dumps(emotion_icons, ensure_ascii=False),
+        'emotion_data': json.dumps(emotion_data),
+    }
+    return render(request, 'report.html', context)
 
 
 # ------------------------------
