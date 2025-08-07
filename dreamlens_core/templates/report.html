@@ -15,9 +15,6 @@
     <link rel="stylesheet" href="{% static 'css/common.css' %}">
     <link rel="stylesheet" href="{% static 'css/report.css' %}">
 
-    <!-- JavaScript -->
-    <script src="{% static 'js/report.js' %}" defer></script>
-
     <!-- 아이콘 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -43,7 +40,7 @@
                         <i class="fas fa-chevron-left"></i>
                     </button>
 
-                    <div class="month-display" id="monthText">
+                    <div class="month-display" id="monthDisplay">
                         <i class="fas fa-calendar-alt"></i>
                         <span>{{ year }}년 {{ month }}월</span>
                         <i class="fas fa-chevron-down dropdown-icon"></i>
@@ -222,7 +219,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/wordcloud@1.1.2/src/wordcloud2.min.js"></script>
 
-    <!-- 커스텀 JavaScript -->
-    <script defer src="{% static 'js/report.js' %}"></script>
+    <!-- 커스텀 JavaScript (중복 제거됨) -->
+    <script src="{% static 'js/report.js' %}"></script>
 </body>
 </html>
