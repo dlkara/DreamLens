@@ -179,7 +179,7 @@ TEMPLATES[0]['OPTIONS']['context_processors'] += [
 
 # OAuth 로그인 리다이렉트
 LOGIN_URL = 'login'
-LOGIN_REDIRECT_URL = 'mypage'
+LOGIN_REDIRECT_URL = 'index'
 LOGOUT_REDIRECT_URL = 'login'
 
 
