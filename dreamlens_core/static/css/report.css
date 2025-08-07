@@ -1,22 +1,16 @@
-/* =====================
-   공통 레이아웃
-===================== */
 body {
     font-family: sans-serif;
     margin: 0;
     padding: 0;
 }
 
-/* 리포트 전체 컨테이너 */
 .report-container {
     max-width: 600px;
     margin: 2em auto;
     padding: 0 1em;
 }
 
-/* =====================
-   상단: 월 네비게이션
-===================== */
+/* 월 네비게이션 */
 .month-nav {
     display: flex;
     justify-content: center;
@@ -42,9 +36,7 @@ body {
     text-decoration: underline;
 }
 
-/* =====================
-   드롭다운 선택기
-===================== */
+/* 드롭다운 */
 .selector {
     display: flex;
     justify-content: center;
@@ -64,9 +56,7 @@ body {
     display: none;
 }
 
-/* =====================
-   탭 스타일
-===================== */
+/* 탭 */
 .tabs {
     display: flex;
     width: 100%;
@@ -101,14 +91,21 @@ body {
     z-index: 2;
 }
 
-/* =====================
-   차트 및 결과 영역
-===================== */
+/* 차트 */
 .chart-wrapper {
     border: 1px solid #ccc;
     padding: 1em;
     background: #fff;
     border-radius: 6px;
+    min-height: 300px;
+}
+
+.chart-box {
+    display: none;
+}
+
+.chart-box:not(.hidden) {
+    display: block;
 }
 
 .result-text {
@@ -123,4 +120,39 @@ body {
     font-weight: bold;
     padding: 0.1em 0.3em 0.3em;
     border-radius: 10px;
+}
+
+/* 워드 클라우드 */
+.wordcloud-section {
+    margin-top: 2em;
+    padding: 1em;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #fdfdfd;
+}
+
+.wordcloud-section h3 {
+    text-align: center;
+    margin-bottom: 1em;
+}
+
+/* 기본 워드 클라우드 영역 */
+#wordCloudArea {
+    width: 100%;
+    height: 300px;
+    background-color: #fff;
+    border-radius: 6px;
+}
+
+/* 데이터 없을 때 회색 배경 적용 클래스 */
+#wordCloudArea.nodata {
+    background-color: #eee;
+}
+
+.chart-wrapper .no-data,
+.wordcloud-section .no-data {
+    text-align: center;
+    margin-top: 1em;
+    color: #888;
+    font-style: italic;
 }

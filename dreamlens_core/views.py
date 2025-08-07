@@ -5,12 +5,13 @@ import faiss
 import numpy as np
 from pathlib import Path
 import pytz
-from collections import defaultdict
+from collections import defaultdict, Counter
 
 import calendar
 from datetime import date
 from datetime import datetime
-from django.utils import timezone
+from datetime import timezone as py_timezone  # 표준 UTC용
+from django.utils import timezone  # Django 시간대 처리용
 from dateutil.relativedelta import relativedelta
 
 from django.conf import settings
@@ -20,7 +21,6 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model  # 현재 설정된 User 모델 반환
-
 User = get_user_model()
 
 from django.db.models import Count
@@ -336,7 +336,7 @@ def dream_combiner(request):
 
 
 # ------------------------------
-# 4. 꿈 일기장 -> TODO : 현정, 지우
+# 4. 꿈 일기장
 # ------------------------------
 @login_required
 def diary_list(request, yyyymm=None):
@@ -557,10 +557,11 @@ def diary_delete(request, pk):
 
 
 # ------------------------------
-# 5. 분석 리포트 TODO : 현정
+# 5. 분석 리포트 -> TODO : 현정, 지우
 # ------------------------------
 @login_required()
 def report_base(request):
+    # 현재 날짜 기준으로 리다이렉트
     today = timezone.localdate()
     yyyymm = today.year * 100 + today.month
     return redirect('report', yyyymm=yyyymm)
@@ -572,6 +573,7 @@ def report(request, yyyymm):
     month = yyyymm % 100
 
     # 현재 연/월 기준 날짜
+    today = date.today()
     first_of_month = date(year, month, 1)
 
     # 이전/다음 월 계산
@@ -582,24 +584,20 @@ def report(request, yyyymm):
 
     # 시작/끝 UTC
     tz = timezone.get_current_timezone()
-    start_local = timezone.make_aware(datetime(year, month, 1, 0, 0), tz)
-    if month == 12:
-        end_local = timezone.make_aware(datetime(year + 1, 1, 1, 0, 0), tz)
-    else:
-        end_local = timezone.make_aware(datetime(year, month + 1, 1, 0, 0), tz)
-    start_utc = start_local.astimezone(pytz.UTC)
-    end_utc = end_local.astimezone(pytz.UTC)
+    start_local = timezone.make_aware(datetime(year, month, 1), tz)
+    end_local = timezone.make_aware(datetime(next_dt.year, next_dt.month, 1), tz)
+    start_utc = start_local.astimezone(py_timezone.utc)
+    end_utc = end_local.astimezone(py_timezone.utc)
 
     diaries = Diary.objects.filter(
         user=request.user,
         date__gte=start_utc,
-        date__lt=end_utc,
-    )
+        date__lt=end_utc
+    ).select_related('emotion', 'dream_type', 'interpretation')
 
     # 차트용 데이터 처리
     dream_counts = (
-        diaries
-        .values('dream_type__type')
+        diaries.values('dream_type__type')
         .annotate(count=Count('id'))
         .order_by('-count')
     )
@@ -607,8 +605,7 @@ def report(request, yyyymm):
     dream_data = [item['count'] for item in dream_counts]
 
     emotion_counts = (
-        diaries
-        .values('emotion__name', 'emotion__icon')
+        diaries.values('emotion__name', 'emotion__icon')
         .annotate(count=Count('id'))
         .order_by('-count')
     )
@@ -616,26 +613,39 @@ def report(request, yyyymm):
     emotion_icons = [item['emotion__icon'] for item in emotion_counts]
     emotion_data = [item['count'] for item in emotion_counts]
 
+    # 키워드 수집
+    keywords_counter = Counter()
+    for diary in diaries:
+        interp = diary.interpretation
+        if interp and interp.keywords:
+            keywords = [k.strip() for k in interp.keywords.split(',') if k.strip()]
+            keywords_counter.update(keywords)
+    keyword_items = list(keywords_counter.items())  # ex. [('돈', 3), ('연애', 2)]
+
     context = {
+        'year': year,
+        'month': month,
+        'prev_yyyymm': prev_yyyymm,
+        'next_yyyymm': next_yyyymm,
+
+        # 현재 날짜 기준 미래인 경우, 다음 달 링크 비활성화
+        'today_yyyymm': today.year * 100 + today.month,
+        'year_list': list(range(2023, today.year + 1)),
+        'month_list': list(range(1, 13)),
+
+        # 해당 연/월에 diary 데이터 존재 여부
+        'has_data': diaries.exists(),
+
+        # 차트 정보
         'dream_labels': json.dumps(dream_labels, ensure_ascii=False),
         'dream_data': json.dumps(dream_data),
         'emotion_labels': json.dumps(emotion_labels, ensure_ascii=False),
         'emotion_icons': json.dumps(emotion_icons, ensure_ascii=False),
         'emotion_data': json.dumps(emotion_data),
-        'year': year,
-        'month': month,
-        'has_data': diaries.exists(),
-        'prev_yyyymm': prev_yyyymm,
-        'next_yyyymm': next_yyyymm,
+
+        # 워드 클라우드 정보
+        'keywords': json.dumps(keyword_items, ensure_ascii=False),
     }
-
-    # 현재 날짜 기준 미래인 경우, 다음 달 링크 비활성화
-    context.update({
-        'today_yyyymm': date.today().year * 100 + date.today().month,
-        'year_list': list(range(2025, date.today().year + 1)),
-        'month_list': list(range(1, 13)),
-    })
-
     return render(request, 'report.html', context)
 
 
