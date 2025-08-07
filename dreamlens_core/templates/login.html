@@ -4,8 +4,19 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>로그인 - DreamLens</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인 - 꿈해몽</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- CSS -->
     <link rel="stylesheet" href="{% static 'css/common.css' %}">
+
+    <!-- 아이콘 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     {% include 'header.html' %}
@@ -13,7 +24,10 @@
     <main class="main-container">
         <div class="form-section">
             <div class="form-header">
-                <h1 class="form-title">로그인</h1>
+                <h1 class="form-title">
+                    <i class="fas fa-sign-in-alt" style="color: var(--color-purple-main); margin-right: 12px;"></i>
+                    로그인
+                </h1>
                 <p class="form-subtitle">꿈의 세계로 들어오세요!</p>
             </div>
 
@@ -21,7 +35,10 @@
                 {% csrf_token %}
 
                 <div class="form-group">
-                    <label for="username" class="form-label">아이디</label>
+                    <label for="username" class="form-label">
+                        <i class="fas fa-user"></i>
+                        아이디
+                    </label>
                     <input
                         type="text"
                         id="username"
@@ -33,7 +50,10 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="password" class="form-label">비밀번호</label>
+                    <label for="password" class="form-label">
+                        <i class="fas fa-lock"></i>
+                        비밀번호
+                    </label>
                     <input
                         type="password"
                         id="password"
@@ -45,10 +65,40 @@
                 </div>
 
                 <button type="submit" class="btn btn-primary btn-large btn-full">
-                    <span class="btn-icon">🔑</span>
+                    <i class="fas fa-key btn-icon"></i>
                     로그인하기
                 </button>
             </form>
+
+            <!-- 구분선 -->
+            <div class="login-divider">
+                <span class="divider-text">또는</span>
+            </div>
+
+            <!-- 소셜 로그인 -->
+            <div class="social-login-section">
+                <h3 class="social-login-title">
+                    <i class="fas fa-share-alt"></i>
+                    소셜 계정으로 간편 로그인
+                </h3>
+
+                <div class="social-login-buttons">
+                    <a href="{% url 'social:begin' 'google-oauth2' %}" class="btn-social btn-google">
+                        <i class="fab fa-google social-icon"></i>
+                        <span>구글로<br>로그인</span>
+                    </a>
+
+                    <a href="{% url 'social:begin' 'kakao' %}" class="btn-social btn-kakao">
+                        <i class="fas fa-comment social-icon"></i>
+                        <span>카카오로<br>로그인</span>
+                    </a>
+
+                    <a href="{% url 'social:begin' 'naver' %}" class="btn-social btn-naver">
+                        <i class="fab fa-neos social-icon"></i>
+                        <span>네이버로<br>로그인</span>
+                    </a>
+                </div>
+            </div>
 
             <!-- 메시지 출력 -->
             {% if messages %}
@@ -56,12 +106,12 @@
                     {% for message in messages %}
                         {% if 'signup' in message.extra_tags %}
                             <div class="message message-success">
-                                <span class="message-icon">✅</span>
+                                <i class="fas fa-check-circle message-icon"></i>
                                 <span class="message-text">{{ message }}</span>
                             </div>
                         {% elif message.tags == 'error' %}
                             <div class="message message-error">
-                                <span class="message-icon">❌</span>
+                                <i class="fas fa-exclamation-circle message-icon"></i>
                                 <span class="message-text">{{ message }}</span>
                             </div>
                         {% endif %}
@@ -77,13 +127,6 @@
             </div>
         </div>
     </main>
-    <div class="social-login">
-        <a href="{% url 'social:begin' 'google-oauth2' %}" class="btn btn-google">구글로 로그인</a>
-        <a href="{% url 'social:begin' 'kakao' %}" class="btn btn-kakao">카카오로 로그인</a>
-        <a href="{% url 'social:begin' 'naver' %}" class="btn btn-naver">네이버로 로그인</a>
-    </div>
-
-
 
     {% include 'footer.html' %}
 

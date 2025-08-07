@@ -1532,6 +1532,228 @@ input[type="date"] {
     padding: 16px 24px;
     font-size: var(--font-size-base);
 }
+/* ========== 소셜 로그인 스타일 (Mobile First) ========== */
+
+/* 로그인 구분선 */
+.login-divider {
+    display: flex;
+    align-items: center;
+    margin: 32px 0; /* 모바일 마진 */
+    position: relative;
+}
+
+.login-divider::before {
+    content: '';
+    flex: 1;
+    height: 2px;
+    background: linear-gradient(90deg, transparent 0%, var(--color-gray-300) 50%, transparent 100%);
+}
+
+.login-divider::after {
+    content: '';
+    flex: 1;
+    height: 2px;
+    background: linear-gradient(90deg, transparent 0%, var(--color-gray-300) 50%, transparent 100%);
+}
+
+.divider-text {
+    padding: 0 20px; /* 모바일 패딩 */
+    background: var(--color-white);
+    color: var(--color-gray-500);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    position: relative;
+    z-index: 1;
+}
+
+/* 소셜 로그인 섹션 */
+.social-login-section {
+    margin: 32px 0; /* 모바일 마진 */
+}
+
+.social-login-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: var(--font-size-base); /* 모바일 크기 */
+    font-weight: 600;
+    color: var(--color-gray-700);
+    margin-bottom: 20px; /* 모바일 마진 */
+    text-align: center;
+    justify-content: center;
+}
+
+.social-login-title i {
+    color: var(--color-purple-main);
+    font-size: 16px; /* 모바일 아이콘 크기 */
+}
+
+/* 소셜 로그인 버튼 컨테이너 */
+.social-login-buttons {
+    display: flex;
+    flex-direction: row; /* 가로 배치 */
+    gap: 12px; /* 모바일 간격 */
+    flex-wrap: wrap; /* 필요시 줄바꿈 */
+    justify-content: center; /* 중앙 정렬 */
+}
+
+/* 소셜 로그인 버튼 공통 스타일 */
+.btn-social {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 16px 12px; /* 모바일 패딩 */
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: var(--font-size-xs); /* 모바일 폰트 */
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-sm);
+    border: 2px solid;
+    position: relative;
+    overflow: hidden;
+    min-height: 80px; /* 모바일 높이 */
+    flex: 1;
+    max-width: 120px; /* 모바일 최대 너비 */
+    gap: 8px; /* 아이콘과 텍스트 간격 */
+}
+
+.btn-social::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.btn-social:hover::before {
+    left: 100%;
+}
+
+.btn-social:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-social:active {
+    transform: translateY(0);
+}
+
+.social-icon {
+    font-size: 20px; /* 모바일 아이콘 크기 */
+    flex-shrink: 0;
+}
+
+/* 소셜 로그인 버튼 텍스트 */
+.btn-social span {
+    text-align: center;
+    font-weight: 600;
+    letter-spacing: -0.2px;
+    line-height: 1.2;
+}
+
+/* 화살표 아이콘 제거 (세로 레이아웃에서는 불필요) */
+.social-arrow {
+    display: none;
+}
+.btn-google {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    color: #1f2937;
+    border-color: #e5e7eb;
+}
+
+.btn-google .social-icon {
+    color: #4285f4;
+}
+
+.btn-google:hover {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e5e7eb 100%);
+    border-color: #4285f4;
+    box-shadow: 0 0 20px rgba(66, 133, 244, 0.2);
+}
+
+/* 카카오 로그인 버튼 */
+.btn-kakao {
+    background: linear-gradient(135deg, #fee500 0%, #ffeb3b 100%);
+    color: #3c1e1e;
+    border-color: #fdd835;
+}
+
+.btn-kakao .social-icon {
+    color: #3c1e1e;
+}
+
+.btn-kakao:hover {
+    background: linear-gradient(135deg, #fdd835 0%, #f9a825 100%);
+    border-color: #f9a825;
+    box-shadow: 0 0 20px rgba(255, 235, 59, 0.4);
+}
+
+/* 네이버 로그인 버튼 */
+.btn-naver {
+    background: linear-gradient(135deg, #03c75a 0%, #00b04f 100%);
+    color: var(--color-white);
+    border-color: #00b04f;
+}
+
+.btn-naver .social-icon {
+    color: var(--color-white);
+}
+
+.btn-naver:hover {
+    background: linear-gradient(135deg, #00b04f 0%, #009442 100%);
+    border-color: #009442;
+    box-shadow: 0 0 20px rgba(3, 199, 90, 0.3);
+}
+
+/* 소셜 로그인 버튼 텍스트 */
+.btn-social span {
+    flex: 1;
+    text-align: center;
+    font-weight: 600;
+    letter-spacing: -0.2px;
+}
+
+
+/* ========== 소셜 로그인 애니메이션 ========== */
+@keyframes socialPulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.02);
+    }
+}
+
+.btn-social:focus {
+    outline: none;
+    animation: socialPulse 0.3s ease;
+}
+
+/* 접근성 개선 */
+.btn-social:focus-visible {
+    outline: 3px solid var(--color-purple-main);
+    outline-offset: 2px;
+}
+
+/* 소셜 로그인 로딩 상태 (선택사항) */
+.btn-social.loading {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.btn-social.loading .social-arrow {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
 
 /* 애니메이션 */
 @keyframes shake {
@@ -1544,6 +1766,43 @@ input[type="date"] {
 
 /* ========== 태블릿 스타일 (768px+) ========== */
 @media (min-width: 768px) {
+    .login-divider {
+        margin: 40px 0;
+    }
+
+    .divider-text {
+        padding: 0 32px;
+        font-size: var(--font-size-base);
+    }
+
+    .social-login-section {
+        margin: 40px 0;
+    }
+
+    .social-login-title {
+        font-size: var(--font-size-lg);
+        margin-bottom: 24px;
+    }
+
+    .social-login-title i {
+        font-size: 20px;
+    }
+
+    .social-login-buttons {
+        gap: 16px;
+    }
+
+    .btn-social {
+        padding: 20px 16px;
+        font-size: var(--font-size-sm);
+        min-height: 100px;
+        max-width: 140px;
+        gap: 12px;
+    }
+
+    .social-icon {
+        font-size: 24px;
+    }
     .interpret-page {
         padding: 40px 32px;
     }
@@ -1953,6 +2212,44 @@ input[type="date"] {
 
 /* ========== 데스크톱 스타일 (1024px+) ========== */
 @media (min-width: 1024px) {
+    .login-divider {
+        margin: 48px 0;
+    }
+
+    .divider-text {
+        padding: 0 40px;
+        font-size: var(--font-size-lg);
+    }
+
+    .social-login-section {
+        margin: 48px 0;
+    }
+
+    .social-login-title {
+        font-size: var(--font-size-xl);
+        margin-bottom: 32px;
+    }
+
+    .social-login-title i {
+        font-size: 24px;
+    }
+
+    .social-login-buttons {
+        gap: 20px;
+        justify-content: center;
+    }
+
+    .btn-social {
+        padding: 24px 20px;
+        font-size: var(--font-size-base);
+        min-height: 120px;
+        max-width: 160px;
+        gap: 16px;
+    }
+
+    .social-icon {
+        font-size: 28px;
+    }
     .register-form {
         max-width: 550px;
     }
