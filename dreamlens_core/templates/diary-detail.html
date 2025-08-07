@@ -9,7 +9,8 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet">
 
     <!-- CSS -->
     <link rel="stylesheet" href="{% static 'css/common.css' %}">
@@ -21,141 +22,146 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    {% if not diary %}
-        <script>
-            alert('해당 정보가 삭제되거나 없습니다.');
-            history.back();
-        </script>
-    {% else %}
-        <!-- 헤더 포함 -->
-        {% include 'header.html' %}
+{% if not diary %}
+    <script>
+        alert('해당 정보가 삭제되거나 없습니다.');
+        history.back();
+    </script>
+{% else %}
+    <!-- 헤더 포함 -->
+    {% include 'header.html' %}
 
-        <!-- 메인 컨테이너 -->
-        <div class="diary-detail-page">
-            <div class="container">
-                <!-- 페이지 헤더 -->
-                <div class="page-header">
-                    <h1 class="page-title">
-                        <i class="fas fa-moon" style="color: var(--color-purple-main); margin-right: 12px;"></i>
-                        {{ diary.date|date:"Y년 n월 j일" }}의 꿈
-                    </h1>
-                    <p class="page-subtitle">기록된 꿈의 조각들을 다시 살펴보세요</p>
-                </div>
+    <!-- 메인 컨테이너 -->
+    <form name="frmDelete" action="{% url 'diary_delete' %}" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="pk" value="{{ diary.id }}"/>
+    </form>
 
-                <!-- 일기 상세 내용 -->
-                <div class="diary-detail-card">
-                    <div class="diary-detail-content">
-                        <!-- 꿈 내용 -->
+    <div class="diary-detail-page">
+        <div class="container">
+            <!-- 페이지 헤더 -->
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="fas fa-moon" style="color: var(--color-purple-main); margin-right: 12px;"></i>
+                    {{ diary.date|date:"Y년 n월 j일" }}의 꿈
+                </h1>
+                <p class="page-subtitle">기록된 꿈의 조각들을 다시 살펴보세요</p>
+            </div>
+
+            <!-- 일기 상세 내용 -->
+            <div class="diary-detail-card">
+                <div class="diary-detail-content">
+                    <!-- 꿈 내용 -->
+                    <div class="detail-section">
+                        <div class="detail-header">
+                            <i class="fas fa-cloud detail-icon"></i>
+                            <h3 class="detail-title">꿈 내용</h3>
+                        </div>
+                        <div class="detail-field">{{ diary.interpretation.input_text }}</div>
+                    </div>
+
+                    <!-- 해몽 결과 -->
+                    <div class="detail-section main-interpretation">
+                        <div class="detail-header">
+                            <i class="fas fa-magic detail-icon"></i>
+                            <h3 class="detail-title">AI 해몽 결과</h3>
+                        </div>
+                        <div class="detail-field interpretation-content">{{ diary.interpretation.result }}</div>
+                    </div>
+
+                    <!-- 핵심 키워드 -->
+                    <div class="detail-section">
+                        <div class="detail-header">
+                            <i class="fas fa-tags detail-icon"></i>
+                            <h3 class="detail-title">핵심 키워드</h3>
+                        </div>
+                        <div class="detail-field keywords-content">{{ diary.interpretation.keywords }}</div>
+                    </div>
+
+                    <!-- 구분선 -->
+                    <div class="detail-divider"></div>
+
+                    <!-- 꿈 정보 그리드 -->
+                    <div class="dream-info-grid">
+                        <!-- 꿈 종류 -->
                         <div class="detail-section">
                             <div class="detail-header">
-                                <i class="fas fa-cloud detail-icon"></i>
-                                <h3 class="detail-title">꿈 내용</h3>
+                                <i class="fas fa-star detail-icon"></i>
+                                <h3 class="detail-title">꿈 종류</h3>
                             </div>
-                            <div class="detail-field">{{ diary.interpretation.input_text }}</div>
+                            <div class="detail-badge dream-type-badge">
+                                {{ diary.dream_type|default:"미분류" }}
+                            </div>
                         </div>
 
-                        <!-- 해몽 결과 -->
-                        <div class="detail-section main-interpretation">
-                            <div class="detail-header">
-                                <i class="fas fa-magic detail-icon"></i>
-                                <h3 class="detail-title">AI 해몽 결과</h3>
-                            </div>
-                            <div class="detail-field interpretation-content">{{ diary.interpretation.result }}</div>
-                        </div>
-
-                        <!-- 핵심 키워드 -->
+                        <!-- 감정 -->
                         <div class="detail-section">
                             <div class="detail-header">
-                                <i class="fas fa-tags detail-icon"></i>
-                                <h3 class="detail-title">핵심 키워드</h3>
+                                <i class="fas fa-heart detail-icon"></i>
+                                <h3 class="detail-title">감정</h3>
                             </div>
-                            <div class="detail-field keywords-content">{{ diary.interpretation.keywords }}</div>
-                        </div>
-
-                        <!-- 구분선 -->
-                        <div class="detail-divider"></div>
-
-                        <!-- 꿈 정보 그리드 -->
-                        <div class="dream-info-grid">
-                            <!-- 꿈 종류 -->
-                            <div class="detail-section">
-                                <div class="detail-header">
-                                    <i class="fas fa-star detail-icon"></i>
-                                    <h3 class="detail-title">꿈 종류</h3>
-                                </div>
-                                <div class="detail-badge dream-type-badge">
-                                    {{ diary.dream_type|default:"미분류" }}
-                                </div>
-                            </div>
-
-                            <!-- 감정 -->
-                            <div class="detail-section">
-                                <div class="detail-header">
-                                    <i class="fas fa-heart detail-icon"></i>
-                                    <h3 class="detail-title">감정</h3>
-                                </div>
-                                <div class="detail-badge emotion-badge">
-                                    {{ diary.emotion|default:"기록 없음" }}
-                                </div>
+                            <div class="detail-badge emotion-badge">
+                                {{ diary.emotion|default:"기록 없음" }}
                             </div>
                         </div>
+                    </div>
 
-                        <!-- 액션 버튼들 -->
-                        <div class="diary-actions">
-                            <a href="{% url 'diary_list_base' %}" class="btn btn-secondary">
-                                <i class="fas fa-list btn-icon"></i>
-                                목록으로
-                            </a>
-                            <a href="{% url 'diary_update' diary.pk %}" class="btn btn-primary">
-                                <i class="fas fa-edit btn-icon"></i>
-                                수정하기
-                            </a>
-                                <button type="button" class="btn btn-danger" id="btnDel">
-                                    <i class="fas fa-trash btn-icon"></i>
-                                    삭제하기
-                                </button>
-                        </div>
+                    <!-- 액션 버튼들 -->
+                    <div class="diary-actions">
+                        <a href="{% url 'diary_list_base' %}" class="btn btn-secondary">
+                            <i class="fas fa-list btn-icon"></i>
+                            목록으로
+                        </a>
+                        <a href="{% url 'diary_update' diary.pk %}" class="btn btn-primary">
+                            <i class="fas fa-edit btn-icon"></i>
+                            수정하기
+                        </a>
+                        <button type="button" class="btn btn-danger" id="btnDel">
+                            <i class="fas fa-trash btn-icon"></i>
+                            삭제하기
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- JavaScript -->
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                // 삭제 확인 모달 개선
-                const deleteForm = document.querySelector('.delete-form');
-                if (deleteForm) {
-                    deleteForm.addEventListener('submit', function(e) {
-                        const isConfirmed = confirm(
-                            '정말로 이 꿈 일기를 삭제하시겠습니까?\n\n삭제된 일기는 복구할 수 없습니다.'
-                        );
-                        if (!isConfirmed) {
-                            e.preventDefault();
-                        }
-                    });
-                }
+    <!-- JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // 삭제 확인 모달 개선
+            const deleteForm = document.querySelector('.delete-form');
+            if (deleteForm) {
+                deleteForm.addEventListener('submit', function (e) {
+                    const isConfirmed = confirm(
+                        '정말로 이 꿈 일기를 삭제하시겠습니까?\n\n삭제된 일기는 복구할 수 없습니다.'
+                    );
+                    if (!isConfirmed) {
+                        e.preventDefault();
+                    }
+                });
+            }
 
-                // 페이지 로드 애니메이션
-                const detailCard = document.querySelector('.diary-detail-card');
-                detailCard.style.opacity = '0';
-                detailCard.style.transform = 'translateY(20px)';
+            // 페이지 로드 애니메이션
+            const detailCard = document.querySelector('.diary-detail-card');
+            detailCard.style.opacity = '0';
+            detailCard.style.transform = 'translateY(20px)';
 
-                setTimeout(() => {
-                    detailCard.style.transition = 'all 0.6s ease';
-                    detailCard.style.opacity = '1';
-                    detailCard.style.transform = 'translateY(0)';
-                }, 100);
-            });
+            setTimeout(() => {
+                detailCard.style.transition = 'all 0.6s ease';
+                detailCard.style.opacity = '1';
+                detailCard.style.transform = 'translateY(0)';
+            }, 100);
+        });
 
-            $(function () {
+        $(function () {
             // 글 [삭제] 버튼
             $("#btnDel").click(function () {
                 confirm("삭제하시겠습니까?") && $("form[name='frmDelete']").submit();
             });
         });
-        </script>
-    {% endif %}
+    </script>
+{% endif %}
 {% include 'footer.html' %}
 </body>
 </html>
