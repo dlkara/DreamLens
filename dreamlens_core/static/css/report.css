@@ -827,5 +827,9 @@
         background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
     }
 
+    .page-title {
+        color: var(--color-white)
+    }
+
     /* 필요시 다크모드 스타일 추가 */
 }
