@@ -42,6 +42,10 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+
+    # WhiteNoiseMiddleware: Django가 DEBUG=False 상태에서도 정적 파일을 직접 서빙할 수 있도록 도와주는 미들웨어
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -134,7 +138,7 @@ STATICFILES_DIRS = [
 # 배포용
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# 정적 파일 자동 압축 및 캐싱
+# WhiteNoiseMiddleware 정적 파일 자동 압축 및 캐싱 방식 이용
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
