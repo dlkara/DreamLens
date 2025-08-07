@@ -41,8 +41,8 @@
 }
 
 .calendar td.today {
-    background-color: white !important;
-    color: black !important;
+    background-color: white;
+    color: black;
     font-weight: bold;
     text-decoration: underline;
 }
