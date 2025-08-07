@@ -41,7 +41,6 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -157,3 +156,45 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 # ⏱ 세션 만료 시간 설정 (초 단위) - 예: 1시간
 SESSION_COOKIE_AGE = 3600  # 1시간 = 3600초
+
+INSTALLED_APPS += [
+    'social_django',
+]
+
+AUTHENTICATION_BACKENDS = [
+    'social_core.backends.google.GoogleOAuth2',
+    'social_core.backends.naver.NaverOAuth2',
+    'social_core.backends.kakao.KakaoOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+MIDDLEWARE += [
+    'social_django.middleware.SocialAuthExceptionMiddleware',
+]
+
+TEMPLATES[0]['OPTIONS']['context_processors'] += [
+    'social_django.context_processors.backends',
+    'social_django.context_processors.login_redirect',
+]
+
+# OAuth 로그인 리다이렉트
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'mypage'
+LOGOUT_REDIRECT_URL = 'login'
+
+
+
+# 추가적으로 이메일 유무에 따라 자동 가입 여부 등 세부 설정도 가능
+SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = ['email', 'profile']
+
+# OAuth2 키 설정
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.getenv('GOOGLE_CLIENT_ID')
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.getenv('GOOGLE_CLIENT_SECRET')
+
+SOCIAL_AUTH_KAKAO_KEY = os.getenv('KAKAO_CLIENT_ID')
+
+SOCIAL_AUTH_NAVER_CLIENT_ID = os.getenv('NAVER_CLIENT_ID')
+SOCIAL_AUTH_NAVER_SECRET = os.getenv('NAVER_CLIENT_SECRET')
+
+
+

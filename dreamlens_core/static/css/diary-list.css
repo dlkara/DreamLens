@@ -128,19 +128,20 @@
     z-index: 2;
 }
 
+/* 날짜 숫자 스타일 - 배경 제거 */
 .calendar td span {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
-    margin: 0 auto;
-    border-radius: var(--radius-full);
+    width: 100%;
+    height: 100%;
     font-weight: 600;
     color: var(--color-gray-700);
     transition: all 0.2s ease;
     position: relative;
     z-index: 1;
+    background: none; /* 배경 제거 */
+    border-radius: 0; /* 둥근 모서리 제거 */
 }
 
 /* 빈 셀 */
@@ -154,24 +155,28 @@
     box-shadow: none;
 }
 
-/* 오늘 날짜 */
-.calendar td.today span {
-    background: linear-gradient(135deg, var(--color-purple-main) 0%, var(--color-purple-dark) 100%);
-    color: var(--color-white);
-    font-weight: 700;
-    box-shadow: 0 0 15px rgba(196, 181, 253, 0.6);
+/* 오늘 날짜 - 노란색 */
+.calendar td.today {
+    background: linear-gradient(135deg, #fef3c7 0%, #fbbf24 100%);
+    border-radius:10px;
+    box-shadow: 0 0 15px rgba(251, 191, 36, 0.6);
     animation: pulse 2s infinite;
 }
 
-/* 감정별 색상 */
+.calendar td.today span {
+    color: #92400e;
+    font-weight: 700;
+}
+
+/* 감정별 색상 - 전체 셀에 적용 */
 .calendar td.good {
-    background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
-    border: 2px solid #86efac;
+    background: linear-gradient(135deg, #dcfce7 0%, darkseagreen 100%);
+    border-radius: 10px;
 }
 
 .calendar td.good span {
-    color: #166534;
-    background: rgba(22, 101, 52, 0.1);
+    color: #14532d;
+    font-weight: 700;
 }
 
 .calendar td.good::after {
@@ -183,13 +188,13 @@
 }
 
 .calendar td.bad {
-    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-    border: 2px solid #fca5a5;
+    background: linear-gradient(135deg, #fee2e2 0%,indianred 100%);
+    border-radius: 10px;
 }
 
 .calendar td.bad span {
-    color: #dc2626;
-    background: rgba(220, 38, 38, 0.1);
+    color: #7f1d1d;
+    font-weight: 700;
 }
 
 .calendar td.bad::after {
@@ -201,13 +206,13 @@
 }
 
 .calendar td.normal {
-    background: linear-gradient(135deg, var(--color-yellow-light) 0%, var(--color-yellow-main) 100%);
-    border: 2px solid var(--color-yellow-main);
+    background: linear-gradient(135deg, #f3f4f6 0%, #9ca3af 100%);
+    border-radius: 10px;
 }
 
 .calendar td.normal span {
-    color: var(--color-yellow-dark);
-    background: rgba(245, 158, 11, 0.1);
+    color: #374151;
+    font-weight: 700;
 }
 
 .calendar td.normal::after {
@@ -372,7 +377,21 @@
     transform: rotate(90deg);
 }
 
-/* 팝업 리스트 세부 스타일 */
+/* 팝업 리스트 스타일 */
+.popup-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.popup-list li {
+    position: relative;
+    padding-left: 0;
+}
+
 .popup-list li a {
     display: block;
     padding: 20px 24px;
@@ -447,6 +466,14 @@
     opacity: 0.7;
 }
 
+.popup-list li a:hover {
+    background: linear-gradient(135deg, var(--color-purple-light) 0%, var(--color-white) 100%);
+    border-color: var(--color-purple-main);
+    color: var(--color-purple-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
 .popup-list li a:hover::after {
     transform: translateY(-50%) translateX(4px);
     opacity: 1;
@@ -470,12 +497,12 @@
 /* 애니메이션 */
 @keyframes pulse {
     0%, 100% {
-        box-shadow: 0 0 15px rgba(196, 181, 253, 0.6);
+        box-shadow: 0 0 15px rgba(251, 191, 36, 0.6);
         transform: scale(1);
     }
     50% {
-        box-shadow: 0 0 25px rgba(196, 181, 253, 0.8);
-        transform: scale(1.05);
+        box-shadow: 0 0 25px rgba(251, 191, 36, 0.8);
+        transform: scale(1.02);
     }
 }
 
@@ -528,8 +555,6 @@
     }
 
     .calendar td span {
-        width: 40px;
-        height: 40px;
         font-size: var(--font-size-base);
     }
 
@@ -592,11 +617,6 @@
     .calendar td {
         height: 70px;
         padding: 16px 12px;
-    }
-
-    .calendar td span {
-        width: 44px;
-        height: 44px;
     }
 
     .btn-group {

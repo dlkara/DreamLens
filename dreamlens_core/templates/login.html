@@ -77,6 +77,13 @@
             </div>
         </div>
     </main>
+    <div class="social-login">
+        <a href="{% url 'social:begin' 'google-oauth2' %}" class="btn btn-google">구글로 로그인</a>
+        <a href="{% url 'social:begin' 'kakao' %}" class="btn btn-kakao">카카오로 로그인</a>
+        <a href="{% url 'social:begin' 'naver' %}" class="btn btn-naver">네이버로 로그인</a>
+    </div>
+
+
 
     {% include 'footer.html' %}
 
