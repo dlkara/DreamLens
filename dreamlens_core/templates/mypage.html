@@ -178,7 +178,6 @@
                             내 일기장 보기
                         </a>
                     </div>
-
                 </div>
             </div>
         </div>
@@ -186,49 +185,41 @@
 
     <!-- JavaScript -->
     <script>
-        // 비밀번호 확인 검증
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const passwordInput = document.getElementById('password');
             const password2Input = document.getElementById('password2');
+            const form = document.querySelector('.register-form');
 
             function validatePasswords() {
                 const password = passwordInput.value;
                 const password2 = password2Input.value;
 
-                // 비밀번호가 입력된 경우에만 검증
+                // 항상 초기화
+                passwordInput.setCustomValidity('');
+                password2Input.setCustomValidity('');
+
                 if (password || password2) {
                     if (password !== password2) {
                         password2Input.setCustomValidity('비밀번호가 일치하지 않습니다.');
-                    } else if (password.length < 8) {
-                        passwordInput.setCustomValidity('비밀번호는 8자 이상이어야 합니다.');
-                    } else {
-                        password2Input.setCustomValidity('');
-                        passwordInput.setCustomValidity('');
+                    } else if (password.length < 4) {
+                        passwordInput.setCustomValidity('비밀번호는 4자 이상이어야 합니다.');
                     }
-                } else {
-                    password2Input.setCustomValidity('');
-                    passwordInput.setCustomValidity('');
                 }
             }
 
             passwordInput.addEventListener('input', validatePasswords);
             password2Input.addEventListener('input', validatePasswords);
 
-            // 폼 제출 시 최종 검증
-            document.querySelector('.register-form').addEventListener('submit', function(e) {
+            form.addEventListener('submit', function (e) {
                 validatePasswords();
 
-                const password = passwordInput.value;
-                const password2 = password2Input.value;
-
-                if ((password || password2) && password !== password2) {
+                if (!form.checkValidity()) {
                     e.preventDefault();
-                    alert('비밀번호가 일치하지 않습니다.');
-                    return false;
+                    form.reportValidity();
+                    return;
                 }
             });
 
-            // 메시지 자동 숨김
             const messages = document.querySelectorAll('.message');
             messages.forEach(message => {
                 setTimeout(() => {
