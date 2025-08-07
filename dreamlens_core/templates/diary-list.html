@@ -4,10 +4,22 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>꿈 일기장</title>
-    <link rel="stylesheet" href="{% static 'css/common.css' %}">
-    <link rel="stylesheet" href="{% static 'css/header.css' %}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>꿈 일기장 - 꿈해몽</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- CSS -->
     <link rel="stylesheet" href="{% static 'css/diary-list.css' %}">
+    <link rel="stylesheet" href="{% static 'css/header.css' %}">
+
+    <!-- 아이콘 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <!-- JavaScript -->
     <script src="{% static 'js/diary-list.js' %}" defer></script>
 
     <!-- 날짜별 엔트리 JSON 삽입 -->
@@ -24,12 +36,18 @@
     {% include 'header.html' %}
 
     <main class="diary-main">
+        <!-- 캘린더 네비게이션 -->
         <section class="calendar-nav">
-            <a href="{% url 'diary_list' prev_yyyymm %}">◀</a>
+            <a href="{% url 'diary_list' prev_yyyymm %}" title="이전 달">
+                <i class="fas fa-chevron-left"></i>
+            </a>
             <span>{{ year }}년 {{ month }}월</span>
-            <a href="{% url 'diary_list' next_yyyymm %}">▶</a>
+            <a href="{% url 'diary_list' next_yyyymm %}" title="다음 달">
+                <i class="fas fa-chevron-right"></i>
+            </a>
         </section>
 
+        <!-- 캘린더 -->
         <div class="calendar-wrapper">
             <table class="calendar">
                 <thead>
@@ -59,20 +77,35 @@
             </table>
         </div>
 
+        <!-- 버튼 그룹 -->
         <div class="btn-group">
-            <a class="btn" href="{% url 'dream_interpreter' %}">해몽하러 가기</a>
-            <a class="btn" href="{% url 'report_base' %}">내 일기장 분석하기</a>
+            <a class="btn" href="{% url 'dream_interpreter' %}">
+                <i class="fas fa-magic"></i>
+                해몽하러 가기
+            </a>
+            <a class="btn" href="{% url 'report_base' %}">
+                <i class="fas fa-chart-line"></i>
+                내 일기장 분석하기
+            </a>
         </div>
     </main>
-    <!-- 📌 일기 팝업 모달 -->
+
+    <!-- 일기 팝업 모달 -->
     <div id="diary-popup" class="diary-popup hidden">
         <div class="popup-content">
-            <button class="popup-close" aria-label="닫기">&times;</button>
-            <h2 class="popup-title">📝 <span id="popup-date"></span>의 일기</h2>
-            <p class="popup-body" id="popup-text">여기에 일기 내용이 표시됩니다.</p>
+            <button class="popup-close" aria-label="닫기">
+                <i class="fas fa-times"></i>
+            </button>
+            <h2 class="popup-title">
+                <i class="fas fa-calendar-day"></i>
+                <span id="popup-date"></span>의 일기
+            </h2>
+            <div class="popup-body" id="popup-text">
+                <!-- JavaScript에서 동적으로 채워집니다 -->
+            </div>
         </div>
     </div>
+
     {% include 'footer.html' %}
 </body>
-
 </html>
