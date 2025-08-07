@@ -1,0 +1,617 @@
+/* ========== 꿈 일기장 캘린더 스타일 (Mobile First) ========== */
+
+/* 메인 컨테이너 */
+.diary-main {
+    padding: 20px 16px;
+    min-height: calc(100vh - 64px);
+    background: linear-gradient(135deg, #f9fafb 0%, #f2f3f5 100%);
+}
+
+/* 캘린더 네비게이션 */
+.calendar-nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 24px 0 32px;
+    background: var(--color-white);
+    border-radius: var(--radius-xl);
+    padding: 16px 24px;
+    box-shadow: var(--shadow-md);
+    border: 2px solid var(--color-purple-light);
+    position: relative;
+    overflow: hidden;
+}
+
+/* 네비게이션 배경 그라데이션 */
+.calendar-nav::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--color-purple-main) 0%, var(--color-yellow-main) 100%);
+    z-index: 1;
+}
+
+.calendar-nav a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-full);
+    background: linear-gradient(135deg, var(--color-purple-main) 0%, var(--color-purple-dark) 100%);
+    color: var(--color-white);
+    text-decoration: none;
+    font-size: 18px;
+    font-weight: 700;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-button);
+    transform: translateY(0);
+}
+
+.calendar-nav a:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 20px rgba(196, 181, 253, 0.5);
+    background: linear-gradient(135deg, var(--color-purple-dark) 0%, var(--color-purple-main) 100%);
+}
+
+.calendar-nav a:active {
+    transform: translateY(0);
+    box-shadow: var(--shadow-sm);
+}
+
+.calendar-nav span {
+    min-width: 160px;
+    text-align: center;
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    color: var(--color-gray-900);
+    letter-spacing: -0.3px;
+    margin: 0 20px;
+}
+
+/* 캘린더 래퍼 */
+.calendar-wrapper {
+    margin-bottom: 32px;
+    padding: 4px;
+    background: linear-gradient(135deg, var(--color-purple-light) 0%, var(--color-yellow-light) 100%);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+}
+
+/* 캘린더 테이블 */
+.calendar {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 2px;
+    text-align: center;
+    background: var(--color-white);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    font-size: var(--font-size-sm);
+    position: relative;
+}
+
+/* 캘린더 헤더 */
+.calendar thead {
+    background: linear-gradient(135deg, var(--color-gray-900) 0%, var(--color-gray-800) 100%);
+}
+
+.calendar th {
+    padding: 16px 8px;
+    font-weight: 700;
+    color: var(--color-white);
+    font-size: var(--font-size-sm);
+    letter-spacing: -0.2px;
+    border: none;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* 캘린더 셀 기본 스타일 */
+.calendar td {
+    width: 14.28%;
+    height: 50px;
+    padding: 8px 4px;
+    border: none;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: var(--color-white);
+    border-radius: var(--radius-md);
+}
+
+.calendar td:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    z-index: 2;
+}
+
+.calendar td span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    margin: 0 auto;
+    border-radius: var(--radius-full);
+    font-weight: 600;
+    color: var(--color-gray-700);
+    transition: all 0.2s ease;
+    position: relative;
+    z-index: 1;
+}
+
+/* 빈 셀 */
+.calendar td.empty {
+    background: var(--color-gray-50);
+    cursor: default;
+}
+
+.calendar td.empty:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+/* 오늘 날짜 */
+.calendar td.today span {
+    background: linear-gradient(135deg, var(--color-purple-main) 0%, var(--color-purple-dark) 100%);
+    color: var(--color-white);
+    font-weight: 700;
+    box-shadow: 0 0 15px rgba(196, 181, 253, 0.6);
+    animation: pulse 2s infinite;
+}
+
+/* 감정별 색상 */
+.calendar td.good {
+    background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+    border: 2px solid #86efac;
+}
+
+.calendar td.good span {
+    color: #166534;
+    background: rgba(22, 101, 52, 0.1);
+}
+
+.calendar td.good::after {
+    content: '😊';
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    font-size: 12px;
+}
+
+.calendar td.bad {
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    border: 2px solid #fca5a5;
+}
+
+.calendar td.bad span {
+    color: #dc2626;
+    background: rgba(220, 38, 38, 0.1);
+}
+
+.calendar td.bad::after {
+    content: '😢';
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    font-size: 12px;
+}
+
+.calendar td.normal {
+    background: linear-gradient(135deg, var(--color-yellow-light) 0%, var(--color-yellow-main) 100%);
+    border: 2px solid var(--color-yellow-main);
+}
+
+.calendar td.normal span {
+    color: var(--color-yellow-dark);
+    background: rgba(245, 158, 11, 0.1);
+}
+
+.calendar td.normal::after {
+    content: '😐';
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    font-size: 12px;
+}
+
+/* 버튼 그룹 */
+.btn-group {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 40px;
+}
+
+.btn-group .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px 24px;
+    border-radius: var(--radius-xl);
+    background: linear-gradient(135deg, var(--color-purple-main) 0%, var(--color-purple-dark) 100%);
+    color: var(--color-white);
+    font-weight: 600;
+    font-size: var(--font-size-base);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-button);
+    transform: translateY(0);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-group .btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.btn-group .btn:hover::before {
+    left: 100%;
+}
+
+.btn-group .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 25px rgba(196, 181, 253, 0.6);
+    background: linear-gradient(135deg, var(--color-purple-dark) 0%, var(--color-purple-main) 100%);
+}
+
+.btn-group .btn:active {
+    transform: translateY(0);
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-group .btn:first-child {
+    background: linear-gradient(135deg, var(--color-purple-main) 0%, var(--color-yellow-main) 100%);
+}
+
+.btn-group .btn:first-child:hover {
+    background: linear-gradient(135deg, var(--color-yellow-main) 0%, var(--color-purple-main) 100%);
+    box-shadow: 0 0 25px rgba(253, 230, 138, 0.6);
+}
+
+/* ========== 팝업 모달 스타일 개선 ========== */
+.diary-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(47, 49, 54, 0.8);
+    backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 16px;
+}
+
+.diary-popup:not(.hidden) {
+    opacity: 1;
+    visibility: visible;
+}
+
+.popup-content {
+    background: var(--color-white);
+    border-radius: var(--radius-xl);
+    padding: 32px 24px;
+    width: 100%;
+    max-width: 480px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+    border: 2px solid var(--color-purple-light);
+    position: relative;
+    transform: scale(0.9) translateY(20px);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.diary-popup:not(.hidden) .popup-content {
+    transform: scale(1) translateY(0);
+}
+
+/* 팝업 상단 그라데이션 바 */
+.popup-content::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--color-purple-main) 0%, var(--color-yellow-main) 100%);
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+}
+
+.popup-title {
+    font-size: var(--font-size-xl);
+    font-weight: 800;
+    color: var(--color-gray-900);
+    margin-bottom: 24px;
+    text-align: center;
+    letter-spacing: -0.3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.popup-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 32px;
+    height: 32px;
+    background: var(--color-gray-100);
+    border: none;
+    border-radius: var(--radius-full);
+    font-size: 18px;
+    color: var(--color-gray-600);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.popup-close:hover {
+    background: var(--color-gray-200);
+    color: var(--color-gray-900);
+    transform: rotate(90deg);
+}
+
+/* 팝업 리스트 세부 스타일 */
+.popup-list li a {
+    display: block;
+    padding: 20px 24px;
+    background: linear-gradient(135deg, var(--color-gray-50) 0%, var(--color-white) 100%);
+    border: 2px solid var(--color-gray-200);
+    border-radius: var(--radius-lg);
+    color: var(--color-gray-800);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.entry-info {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.entry-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.entry-emotion {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.entry-type {
+    background: linear-gradient(135deg, var(--color-purple-light) 0%, var(--color-purple-main) 100%);
+    color: var(--color-purple-dark);
+    padding: 4px 12px;
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    border: 1px solid var(--color-purple-main);
+}
+
+.entry-content {
+    font-size: var(--font-size-sm);
+    color: var(--color-gray-700);
+    line-height: 1.5;
+    font-weight: 500;
+}
+
+.entry-keywords {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: var(--font-size-xs);
+    color: var(--color-gray-500);
+    font-weight: 400;
+}
+
+.entry-keywords i {
+    color: var(--color-purple-main);
+}
+
+.popup-list li a::after {
+    content: '→';
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+    font-size: 16px;
+    color: var(--color-purple-main);
+    transition: all 0.2s ease;
+    opacity: 0.7;
+}
+
+.popup-list li a:hover::after {
+    transform: translateY(-50%) translateX(4px);
+    opacity: 1;
+}
+
+/* 빈 상태 메시지 */
+.popup-empty {
+    text-align: center;
+    padding: 32px 16px;
+    color: var(--color-gray-500);
+    font-size: var(--font-size-base);
+    line-height: 1.6;
+}
+
+.popup-empty-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.6;
+}
+
+/* 애니메이션 */
+@keyframes pulse {
+    0%, 100% {
+        box-shadow: 0 0 15px rgba(196, 181, 253, 0.6);
+        transform: scale(1);
+    }
+    50% {
+        box-shadow: 0 0 25px rgba(196, 181, 253, 0.8);
+        transform: scale(1.05);
+    }
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ========== 태블릿 스타일 (768px+) ========== */
+@media (min-width: 768px) {
+    .diary-main {
+        padding: 40px 32px;
+    }
+
+    .calendar-nav {
+        margin: 32px 0 40px;
+        padding: 20px 32px;
+    }
+
+    .calendar-nav a {
+        width: 48px;
+        height: 48px;
+        font-size: 20px;
+    }
+
+    .calendar-nav span {
+        min-width: 200px;
+        font-size: var(--font-size-xl);
+        margin: 0 32px;
+    }
+
+    .calendar {
+        font-size: var(--font-size-base);
+    }
+
+    .calendar th {
+        padding: 20px 12px;
+        font-size: var(--font-size-base);
+    }
+
+    .calendar td {
+        height: 60px;
+        padding: 12px 8px;
+    }
+
+    .calendar td span {
+        width: 40px;
+        height: 40px;
+        font-size: var(--font-size-base);
+    }
+
+    .btn-group {
+        flex-direction: row;
+        justify-content: center;
+        gap: 24px;
+    }
+
+    .btn-group .btn {
+        min-width: 200px;
+        padding: 18px 32px;
+        font-size: var(--font-size-lg);
+    }
+
+    .popup-content {
+        padding: 40px 32px;
+        max-width: 520px;
+    }
+
+    .popup-title {
+        font-size: var(--font-size-2xl);
+        margin-bottom: 32px;
+    }
+
+    .popup-list {
+        gap: 16px;
+    }
+
+    .popup-list li a {
+        padding: 20px 24px;
+        font-size: var(--font-size-lg);
+    }
+}
+
+/* ========== 데스크톱 스타일 (1024px+) ========== */
+@media (min-width: 1024px) {
+    .diary-main {
+        padding: 80px 40px 40px;
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    .calendar-nav {
+        margin: 40px 0 48px;
+        padding: 24px 40px;
+    }
+
+    .calendar-nav a {
+        width: 52px;
+        height: 52px;
+        font-size: 22px;
+    }
+
+    .calendar-nav span {
+        font-size: var(--font-size-2xl);
+        margin: 0 40px;
+    }
+
+    .calendar td {
+        height: 70px;
+        padding: 16px 12px;
+    }
+
+    .calendar td span {
+        width: 44px;
+        height: 44px;
+    }
+
+    .btn-group {
+        gap: 32px;
+        margin-top: 56px;
+    }
+
+    .btn-group .btn {
+        min-width: 240px;
+        padding: 20px 40px;
+        font-size: var(--font-size-xl);
+    }
+
+    .popup-content {
+        padding: 48px 40px;
+        max-width: 600px;
+    }
+}
