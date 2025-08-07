@@ -85,5 +85,5 @@ class DiaryForm(forms.ModelForm):
         super(DiaryForm, self).__init__(*args, **kwargs)
         # 폼이 처음 로드될 때 오늘 날짜를 기본값으로 설정
         if 'initial' not in kwargs:
-            self.fields['date'].initial = timezone.now().date()
+            self.fields['date'].initial =timezone.localdate()
 

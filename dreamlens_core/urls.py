@@ -20,7 +20,10 @@ urlpatterns = [
     path('diary/write/', views.diary_write, name='diary_write'),
     path('diary/writeOk/', views.diary_writeOk, name='diary_writeOk'),
     path('diary/detail/<int:pk>/', views.diary_detail, name='diary_detail'),
-    
+    path('diary/update/<int:pk>/', views.diary_update, name='diary_update'),
+    path('diary/updateOk/', views.diary_updateOk, name='diary_updateOk'),
+    path('diary/delete/<int:pk>/', views.diary_delete, name='diary_delete'),
+
     # 분석 리포트 -> TODO : 지우
     path('report/', views.report, name='report'),
 
