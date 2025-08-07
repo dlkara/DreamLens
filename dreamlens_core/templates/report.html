@@ -1,5 +1,4 @@
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -12,28 +11,54 @@
 
     <h2>내 일기장 분석 리포트</h2>
 
+    <div class="month-nav">
+        <a href="{% url 'report' prev_yyyymm %}">◀</a>
+
+        <span id="monthText" class="clickable">{{ year }}년 {{ month }}월</span>
+
+        {% if next_yyyymm <= today_yyyymm %}
+            <a href="{% url 'report' next_yyyymm %}">▶</a>
+        {% else %}
+            <span class="disabled">▶</span>
+        {% endif %}
+    </div>
+
+    <!-- 드롭다운 선택기 (기본 숨김) -->
+    <div class="selector hidden" id="selectorBox">
+        <select id="yearSelect">
+            {% for y in year_list %}
+            <option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>
+            {% endfor %}
+        </select>
+        <select id="monthSelect">
+            {% for m in month_list %}
+            <option value="{{ m|stringformat:"02d" }}" {% if m == month %}selected{% endif %}>{{ m }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- 차트 정보 -->
+    <div id="reportInfo"
+         data-year="{{ year }}"
+         data-month="{{ month }}"
+         data-has-data="{{ has_data|yesno:'1,0' }}">
+    </div>
+
     <div class="report-container">
-        <!-- ① 폴더 형태 탭 -->
         <div class="tabs">
             <button id="typeTab" class="tab active">꿈 종류 분석</button>
             <button id="emotionTab" class="tab">감정 분석</button>
         </div>
 
-        <!-- ② 차트 표시 영역 -->
         <div class="chart-wrapper">
             <canvas id="reportChart"></canvas>
-
-            <!-- ③ 결과 문구: id 추가 -->
-            <div class="result-text" id="resultText">
-                –
-            </div>
+            <div class="result-text" id="resultText">–</div>
         </div>
     </div>
 
     {% include 'footer.html' %}
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
-
     <script>
         const dreamLabels   = {{ dream_labels|safe }};
         const dreamData     = {{ dream_data|safe }};
@@ -41,7 +66,6 @@
         const emotionIcons  = {{ emotion_icons|safe }};
         const emotionData   = {{ emotion_data|safe }};
     </script>
-
     <script src="{% static 'js/report.js' %}"></script>
 </body>
 </html>

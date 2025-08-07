@@ -24,8 +24,9 @@ urlpatterns = [
     path('diary/updateOk/', views.diary_updateOk, name='diary_updateOk'),
     path('diary/delete/<int:pk>/', views.diary_delete, name='diary_delete'),
 
-    # 분석 리포트 -> TODO : 지우
-    path('report/', views.report, name='report'),
+    # 분석 리포트 -> TODO : 현정, 지우
+    path('report/', views.report_base, name='report_base'),
+    path('report/<int:yyyymm>/', views.report, name='report'),
 
     # 로그인/로그아웃, 회원가입
     path('login/', views.login_view, name='login'),

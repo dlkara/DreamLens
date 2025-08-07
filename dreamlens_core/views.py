@@ -547,8 +547,10 @@ def diary_update(request, pk):
             'error_message': error_message,
         })
 
+
 def diary_updateOk(request, pk):
     return render(request, 'diary-updateOk.html', {'pk': pk})
+
 
 def diary_delete(request, pk):
     ...
@@ -557,12 +559,44 @@ def diary_delete(request, pk):
 # ------------------------------
 # 5. 분석 리포트 TODO : 현정
 # ------------------------------
-@login_required
-def report(request):
-    # 1) 현재 사용자 일기 전체 조회
-    diaries = Diary.objects.filter(user=request.user)
+@login_required()
+def report_base(request):
+    today = timezone.localdate()
+    yyyymm = today.year * 100 + today.month
+    return redirect('report', yyyymm=yyyymm)
 
-    # 2) 꿈 종류 분석: dream_type__type별 일기 수 집계
+
+@login_required
+def report(request, yyyymm):
+    year = yyyymm // 100
+    month = yyyymm % 100
+
+    # 현재 연/월 기준 날짜
+    first_of_month = date(year, month, 1)
+
+    # 이전/다음 월 계산
+    prev_dt = first_of_month - relativedelta(months=1)
+    next_dt = first_of_month + relativedelta(months=1)
+    prev_yyyymm = prev_dt.year * 100 + prev_dt.month
+    next_yyyymm = next_dt.year * 100 + next_dt.month
+
+    # 시작/끝 UTC
+    tz = timezone.get_current_timezone()
+    start_local = timezone.make_aware(datetime(year, month, 1, 0, 0), tz)
+    if month == 12:
+        end_local = timezone.make_aware(datetime(year + 1, 1, 1, 0, 0), tz)
+    else:
+        end_local = timezone.make_aware(datetime(year, month + 1, 1, 0, 0), tz)
+    start_utc = start_local.astimezone(pytz.UTC)
+    end_utc = end_local.astimezone(pytz.UTC)
+
+    diaries = Diary.objects.filter(
+        user=request.user,
+        date__gte=start_utc,
+        date__lt=end_utc,
+    )
+
+    # 차트용 데이터 처리
     dream_counts = (
         diaries
         .values('dream_type__type')
@@ -572,7 +606,6 @@ def report(request):
     dream_labels = [item['dream_type__type'] for item in dream_counts]
     dream_data = [item['count'] for item in dream_counts]
 
-    # 3) 감정 분석: emotion__name, emotion__icon별 일기 수 집계
     emotion_counts = (
         diaries
         .values('emotion__name', 'emotion__icon')
@@ -583,14 +616,26 @@ def report(request):
     emotion_icons = [item['emotion__icon'] for item in emotion_counts]
     emotion_data = [item['count'] for item in emotion_counts]
 
-    # 4) JSON 직렬화 (ensure_ascii=False 로 한글 깨짐 방지)
     context = {
         'dream_labels': json.dumps(dream_labels, ensure_ascii=False),
         'dream_data': json.dumps(dream_data),
         'emotion_labels': json.dumps(emotion_labels, ensure_ascii=False),
         'emotion_icons': json.dumps(emotion_icons, ensure_ascii=False),
         'emotion_data': json.dumps(emotion_data),
+        'year': year,
+        'month': month,
+        'has_data': diaries.exists(),
+        'prev_yyyymm': prev_yyyymm,
+        'next_yyyymm': next_yyyymm,
     }
+
+    # 현재 날짜 기준 미래인 경우, 다음 달 링크 비활성화
+    context.update({
+        'today_yyyymm': date.today().year * 100 + date.today().month,
+        'year_list': list(range(2025, date.today().year + 1)),
+        'month_list': list(range(1, 13)),
+    })
+
     return render(request, 'report.html', context)
 
 
