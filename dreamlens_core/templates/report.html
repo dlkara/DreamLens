@@ -1,8 +1,8 @@
-{% load static %}
 <!DOCTYPE html>
+{% load static %}
 <html lang="ko">
 <head>
-    <meta charset="UTF-8"/>
+    <meta charset="UTF-8">
     <title>꿈 리포트</title>
     <link rel="stylesheet" href="{% static 'css/report.css' %}"/>
 </head>
@@ -12,7 +12,6 @@
     <h2>내 일기장 분석 리포트</h2>
 
     <div class="report-container">
-
         <!-- 월 네비게이션 -->
         <div class="month-nav">
             <a href="{% url 'report' prev_yyyymm %}" class="{% if prev_yyyymm < 202301 %}disabled{% endif %}">◀</a>
@@ -44,35 +43,30 @@
 
         <!-- 차트 -->
         <div class="chart-wrapper">
-            <!-- 꿈 종류 분석 차트 -->
             <div id="dreamChartBox" class="chart-box">
                 <canvas id="dreamChart"></canvas>
             </div>
-
-            <!-- 감정 분석 차트 -->
             <div id="emotionChartBox" class="chart-box hidden">
                 <canvas id="emotionChart"></canvas>
             </div>
 
-            {% if not has_data %}
-            <p class="no-data">{{ year }}년 {{ month }}월에는 꿈 일기가 없습니다.</p>
-            {% endif %}
+            <!-- 차트 문구 -->
+            <div class="result-text" id="chartDesc">
+                {% if not has_data %}
+                {{ year }}년 {{ month }}월에는 꿈 일기가 없습니다.
+                {% endif %}
+            </div>
         </div>
 
         <!-- 워드 클라우드 -->
         <div class="wordcloud-section">
-            <h3>나의 꿈 키워드 클라우드</h3>
+            <h3>꿈 키워드 클라우드</h3>
             <div id="wordCloudArea"></div>
-            {% if not has_data %}
-            <p class="no-data">{{ year }}년 {{ month }}월에는 꿈 일기가 없습니다.</p>
-            {% endif %}
         </div>
-
     </div>
 
     {% include 'footer.html' %}
 
-    <!-- 차트 & 키워드 데이터 -->
     <script>
         const dreamLabels = {{ dream_labels|safe }};
         const dreamData = {{ dream_data|safe }};
