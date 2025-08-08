@@ -1,37 +1,37 @@
 import os
 import openai
+# --- 표준 라이브러리 ---
+import os
 import json
+import calendar
+from collections import defaultdict, Counter
+from datetime import date, datetime
+from datetime import timezone as py_timezone
+
+# --- 서드파티 ---
+import openai
 import faiss
 import numpy as np
 import pandas as pd
-from pathlib import Path
 import pytz
-from collections import defaultdict, Counter
-
-import calendar
-from datetime import date
-from datetime import datetime
-from datetime import timezone as py_timezone  # 표준 UTC용
-from django.utils import timezone  # Django 시간대 처리용
 from dateutil.relativedelta import relativedelta
 
+# --- Django ---
 from django.conf import settings
 from django.http import JsonResponse, HttpResponse, Http404
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import get_user_model  # 현재 설정된 User 모델 반환
+from django.utils import timezone
+from django.db.models import Count
+
+# --- 로컬 앱 ---
+from .models import Interpretation, Diary
+from .forms import DiaryForm
 
 User = get_user_model()
 
-from django.db.models import Count
-
-from .models import Interpretation
-from .models import DreamDict
-from .models import Diary
-from .forms import DiaryForm
-from .forms import MyPageForm
 
 # ------------------------------
 # 0. 공통 설정
