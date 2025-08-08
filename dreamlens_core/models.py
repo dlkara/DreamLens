@@ -1,15 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
-class DreamDict(models.Model):
-    category = models.CharField(max_length=50)   # 대분류
-    keyword = models.CharField(max_length=50)    # 소분류 키워드
-    meaning = models.TextField()                 # 상징적 의미
-
-    def __str__(self):
-        return f"[{self.category}] {self.keyword}"
-
-
 # ----------------------------------------------------------------
 # Users 모델
 # ----------------------------------------------------------------
