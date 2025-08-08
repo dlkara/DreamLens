@@ -14,12 +14,12 @@ model.json
 __pycache__
 
 # DreamInterPretTest 중 데이터 부분
-DreamInterPretTest/data
-DreamInterPretTest/embeddings
+DreamInterPretTest/data/
+DreamInterPretTest/embeddings/
 
 # DreamCombinerTest 중 데이터 부분
-DreamCombinerTest/data
-DreamCombinerTest/embeddings
+DreamCombinerTest/data/
+DreamCombinerTest/embeddings/
 
 # 배포용 정적 파일 경로
 staticfiles/
