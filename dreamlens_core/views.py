@@ -1,5 +1,3 @@
-import os
-import openai
 # --- 표준 라이브러리 ---
 import os
 import json
@@ -587,75 +585,8 @@ def diary_delete(request):
 
 
 # ------------------------------
-# 5. 분석 리포트 -> TODO : 현정, 지우
+# 5. 분석 리포트
 # ------------------------------
-def analyze_emotion_keywords(user, year, month):
-    print(user)
-    """
-    특정 사용자의 지정된 월별 일기 데이터를 받아, 감정별 상위 키워드를 분석하는 함수
-    """
-    # calendar.monthrange(year, month)는 (요일, 마지막 날짜)를 반환합니다.
-    _, last_day = calendar.monthrange(year, month)
-    start_date = timezone.datetime(year, month, 1)
-    end_date = timezone.datetime(year, month, last_day, 23, 59, 59)
-
-    # 2. __range를 사용하여 해당 월의 모든 데이터를 조회합니다.
-    diaries = Diary.objects.filter(
-        user=user,
-        date__range=(start_date, end_date)
-    ).values('emotion__icon', 'emotion__name', 'interpretation__keywords')
-
-    # ⭐️ [디버깅] 1. 필터링된 쿼리셋 확인
-    print("\n[Debug 1] Filtered Diaries QuerySet:")
-    print(diaries)
-
-    if not diaries.exists():
-        return {}  # 분석할 데이터가 없으면 빈 딕셔너리를 반환합니다.
-
-    # 2. 데이터를 Pandas DataFrame으로 변환합니다.
-    df = pd.DataFrame(list(diaries))
-
-    # ⭐️ [디버깅] 2. 생성된 데이터프레임 확인
-    print("\n[Debug 2] Pandas DataFrame:")
-    print(df)
-
-    # ⭐️ [수정] 아이콘과 이름을 합쳐 새로운 그룹 기준 열을 만듭니다.
-    df['emotion_label'] = df['emotion__icon'] + ' ' + df['emotion__name']
-
-    # 3. 새로 만든 'emotion_label' 열로 데이터를 그룹화합니다.
-    emotion_groups = df.groupby('emotion_label')
-
-    analysis_result = {}
-
-    # 4. 각 감정 그룹을 순회하며 키워드 빈도를 계산합니다.
-    for emotion, group_df in emotion_groups:
-
-        # ⭐️ [디버깅] 3. 각 감정 그룹별 데이터 확인
-        print(f"\n[Debug 3] Processing Emotion Group: {emotion}")
-        print(group_df)
-
-        # 4-1. 해당 감정 그룹의 모든 키워드들을 하나의 리스트로 합칩니다.
-        all_keywords = []
-        for keywords in group_df['interpretation__keywords']:
-            keyword_list = [keyword.strip() for keyword in keywords.split(',')]
-            all_keywords.extend(keyword_list)
-
-        if not all_keywords:
-            continue
-
-        # 5. 키워드 빈도를 계산합니다.
-        keyword_counts = Counter(all_keywords)
-
-        # 6. 가장 빈도가 높은 상위 3개의 키워드를 추출합니다.
-        top_3_keywords = keyword_counts.most_common(3)
-
-        # 결과 딕셔너리에 저장 (키워드 이름만 저장)
-        analysis_result[emotion] = [keyword for keyword, count in top_3_keywords]
-        print(analysis_result)
-
-    return analysis_result
-
-
 @login_required()
 def report_base(request):
     # 현재 날짜 기준으로 리다이렉트
@@ -664,6 +595,7 @@ def report_base(request):
     return redirect('report', yyyymm=yyyymm)
 
 
+# 1. 꿈 종류 및 감정 분석 차트, 꿈 키워드 클라우드
 @login_required
 def report(request, yyyymm):
     year = yyyymm // 100
@@ -752,6 +684,74 @@ def report(request, yyyymm):
         'emotion_keyword_analysis': emotion_keyword_data,
     }
     return render(request, 'report.html', context)
+
+
+# 2. 감정별 키워드 연관성 분석
+def analyze_emotion_keywords(user, year, month):
+    print(user)
+    """
+    특정 사용자의 지정된 월별 일기 데이터를 받아, 감정별 상위 키워드를 분석하는 함수
+    """
+    # calendar.monthrange(year, month)는 (요일, 마지막 날짜)를 반환합니다.
+    _, last_day = calendar.monthrange(year, month)
+    start_date = timezone.datetime(year, month, 1)
+    end_date = timezone.datetime(year, month, last_day, 23, 59, 59)
+
+    # 2. __range를 사용하여 해당 월의 모든 데이터를 조회합니다.
+    diaries = Diary.objects.filter(
+        user=user,
+        date__range=(start_date, end_date)
+    ).values('emotion__icon', 'emotion__name', 'interpretation__keywords')
+
+    # [디버깅] 1. 필터링된 쿼리셋 확인
+    # print("\n[Debug 1] Filtered Diaries QuerySet:")
+    # print(diaries)
+
+    if not diaries.exists():
+        return {}  # 분석할 데이터가 없으면 빈 딕셔너리를 반환합니다.
+
+    # 2. 데이터를 Pandas DataFrame으로 변환합니다.
+    df = pd.DataFrame(list(diaries))
+
+    # [디버깅] 2. 생성된 데이터프레임 확인
+    # print("\n[Debug 2] Pandas DataFrame:")
+    # print(df)
+
+    # 아이콘과 이름을 합쳐 새로운 그룹 기준 열을 만듭니다.
+    df['emotion_label'] = df['emotion__icon'] + ' ' + df['emotion__name']
+
+    # 3. 새로 만든 'emotion_label' 열로 데이터를 그룹화합니다.
+    emotion_groups = df.groupby('emotion_label')
+
+    analysis_result = {}
+
+    # 4. 각 감정 그룹을 순회하며 키워드 빈도를 계산합니다.
+    for emotion, group_df in emotion_groups:
+
+        # [디버깅] 3. 각 감정 그룹별 데이터 확인
+        # print(f"\n[Debug 3] Processing Emotion Group: {emotion}")
+        # print(group_df)
+
+        # 4-1. 해당 감정 그룹의 모든 키워드들을 하나의 리스트로 합칩니다.
+        all_keywords = []
+        for keywords in group_df['interpretation__keywords']:
+            keyword_list = [keyword.strip() for keyword in keywords.split(',')]
+            all_keywords.extend(keyword_list)
+
+        if not all_keywords:
+            continue
+
+        # 5. 키워드 빈도를 계산합니다.
+        keyword_counts = Counter(all_keywords)
+
+        # 6. 가장 빈도가 높은 상위 3개의 키워드를 추출합니다.
+        top_3_keywords = keyword_counts.most_common(3)
+
+        # 결과 딕셔너리에 저장 (키워드 이름만 저장)
+        analysis_result[emotion] = [keyword for keyword, count in top_3_keywords]
+        # print(analysis_result)
+
+    return analysis_result
 
 
 # ------------------------------
