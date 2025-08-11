@@ -187,7 +187,6 @@ LOGIN_REDIRECT_URL = 'index'
 LOGOUT_REDIRECT_URL = 'login'
 
 
-
 # 추가적으로 이메일 유무에 따라 자동 가입 여부 등 세부 설정도 가능
 SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = ['email', 'profile']
 

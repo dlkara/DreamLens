@@ -34,6 +34,9 @@
             <form method="post" class="login-form">
                 {% csrf_token %}
 
+                <!-- 원래 가려던 URL -->
+                <input type="hidden" name="next" value="{{ next }}">
+
                 <div class="form-group">
                     <label for="username" class="form-label">
                         <i class="fas fa-user"></i>
@@ -82,23 +85,25 @@
                     소셜 계정으로 간편 로그인
                 </h3>
 
+                {% with carry=next %}
                 <div class="social-login-buttons">
-                    <a href="{% url 'social:begin' 'google-oauth2' %}" class="btn-social btn-google">
+                    <a href="{% url 'social:begin' 'google-oauth2' %}{% if next %}?next={{ next|urlencode }}{% endif %}" class="btn-social btn-google">
                         <i class="fab fa-google social-icon"></i>
                         <span>구글로<br>로그인</span>
                     </a>
 
-                    <a href="{% url 'social:begin' 'kakao' %}" class="btn-social btn-kakao">
+                    <a href="{% url 'social:begin' 'kakao' %}{% if next %}?next={{ next|urlencode }}{% endif %}" class="btn-social btn-kakao">
                         <i class="fas fa-comment social-icon"></i>
                         <span>카카오로<br>로그인</span>
                     </a>
 
-                    <a href="{% url 'social:begin' 'naver' %}" class="btn-social btn-naver">
+                    <a href="{% url 'social:begin' 'naver' %}{% if next %}?next={{ next|urlencode }}{% endif %}" class="btn-social btn-naver">
                         <i class="fab fa-neos social-icon"></i>
                         <span>네이버로<br>로그인</span>
                     </a>
                 </div>
-            </div>
+                {% endwith %}
+
 
             <!-- 메시지 출력 -->
             {% if messages %}

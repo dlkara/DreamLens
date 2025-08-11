@@ -17,11 +17,12 @@ from dateutil.relativedelta import relativedelta
 # --- Django ---
 from django.conf import settings
 from django.http import JsonResponse, HttpResponse, Http404
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, resolve_url
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.db.models import Count
 
 # --- 로컬 앱 ---
@@ -804,6 +805,15 @@ def check_username(request):
 
 # 로그인
 def login_view(request):
+    # 1) next 후보 만들기 (GET/POST -> Referer -> 기본값)
+    next_url = request.POST.get('next') or request.GET.get('next') or ''
+    if not next_url:
+        ref = request.META.get('HTTP_REFERER', '')
+        if ref and url_has_allowed_host_and_scheme(ref, {request.get_host()}, require_https=request.is_secure()):
+            next_url = ref
+    if not next_url:
+        next_url = resolve_url(settings.LOGIN_REDIRECT_URL)  # 최종 fallback
+
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -811,13 +821,18 @@ def login_view(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            return redirect('/')  # 메인 페이지로
+
+            # 2) 안전한 내부 URL만 허용
+            if url_has_allowed_host_and_scheme(next_url, {request.get_host()}, require_https=request.is_secure()):
+                return redirect(next_url)
+            return redirect(resolve_url(settings.LOGIN_REDIRECT_URL))
         else:
             messages.error(request, '아이디 또는 비밀번호가 틀렸습니다.')
 
-    return render(request, 'login.html')
+    return render(request, 'login.html', {'next': next_url})
 
 
+# 로그아웃
 def logout_view(request):
     logout(request)
     return redirect('/')
