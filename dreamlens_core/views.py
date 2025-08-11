@@ -159,15 +159,19 @@ def generate_llm_response(user_dream, retrieved_data, categories_data):
 
 def dream_interpreter(request):
     context = {}
+
     # GET 요청
     if request.method == "GET":
-        return render(request, 'interpret.html')
+        saved = request.session.pop('saved_dream', '')
+        if saved:
+            context['dream'] = saved
+        return render(request, 'interpret.html', context)
 
     # POST 요청 (해몽하기 버튼 눌렀을 시)
     elif request.method == "POST":
         dream = request.POST['input_text'].strip()
-
         context['dream'] = dream
+        request.session['saved_dream'] = dream
 
         if dream and faiss_index is not None:
             # 1. 사용자 꿈 임베딩 및 Faiss 검색
